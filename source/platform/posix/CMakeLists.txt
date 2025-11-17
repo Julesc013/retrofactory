@@ -12,6 +12,7 @@ target_link_libraries(platform_posix
         engine
         core
         system
+        runtime
 )
 
 add_executable(retrofactory_posix_stub

@@ -1,6 +1,7 @@
 add_subdirectory(system)
 add_subdirectory(world)
 add_subdirectory(core)
+add_subdirectory(runtime)
 add_subdirectory(save)
 add_subdirectory(engine)
 add_subdirectory(platform)

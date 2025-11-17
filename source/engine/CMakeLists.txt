@@ -11,5 +11,6 @@ target_link_libraries(engine
     PUBLIC
         core
         system
+        runtime
         save
 )
