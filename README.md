@@ -1,29 +1,9 @@
 # Retrofactory Project Specification – Master v10
 
 **Author:** Jules Carboni  
-**Project:** Retrofactory (All Editions and Mods)  
-**Version:** Master v10, 2025-11-17  
-**Status:** Canonical merged spec (Master v7 + Amendments 00–08, 11, 13, 14, 15, plan, xx)
-
----
-
-## 0. Document Status and Intent
-
-This document supersedes:
-
-- `Retrofactory Project Specification – Master v7`
-- All numbered update fragments (`00.md`–`08.md`, `11.md`, `13.md`, `14.md`, `15.md`)
-- The v10/vFinal drafts and implementation plan notes
-
-It represents the **single source of truth** for:
-
-- Game design at the rf-core level (base game and official expansions)
-- Engine and code architecture (rf-kernel, rf-core, rf-space, planet packs, and mod tiers)
-- Edition/profile matrix and platform targets
-- Numeric model, determinism rules, and algorithmic constraints
-- Implementation roadmap and test/CI expectations
-
-Where earlier documents disagree, this version is authoritative.
+**Project:** Retrofactory
+**Version:** v10, 2025-11-17  
+**Status:** Maybe out of date
 
 ---
 
@@ -45,7 +25,7 @@ Key goals:
 - **Lockstep deterministic simulation**:
   - All full editions share the same rules and produce identical results under identical inputs (subject to caps).
 - **Data-driven content**:
-  - Base game (`rf-core`) + expansion(s) (`rf-space`) implemented as mods on top of rf-kernel.
+  - Base game (`rf-base`) + expansion(s) (`rf-space`) implemented as mods on top of rf-kernel.
 - **Long-term survivability**:
   - Code and content designed to remain buildable and playable on decades of hardware/OS stacks.
 
