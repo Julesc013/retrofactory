@@ -3,10 +3,13 @@
 #include <cstdio>
 #include <cstddef>
 
+#include "world/world_grid.h"
+#include "world/world_space.h"
+
 namespace
 {
     const uint32 kSaveMagic = 0x52465331u; /* "RFS1" */
-    const uint32 kSaveVersion = 1u;
+    const uint32 kSaveVersionWorld = 2u;
 
     bool write_bytes(std::FILE *file, const unsigned char *data, size_t size)
     {
@@ -82,6 +85,87 @@ namespace
         value = decode_u64(buffer);
         return true;
     }
+    bool write_world_section(std::FILE *file, const World &world)
+    {
+        const WorldDimensions &dim = world_get_dimensions(world);
+        bool ok = true;
+        ok = ok && write_u32(file, static_cast<uint32>(dim.chunk_count_x));
+        ok = ok && write_u32(file, static_cast<uint32>(dim.chunk_count_y));
+        ok = ok && write_u32(file, static_cast<uint32>(dim.chunk_size_x));
+        ok = ok && write_u32(file, static_cast<uint32>(dim.chunk_size_y));
+
+        const int32 chunk_total = dim.chunk_count_x * dim.chunk_count_y;
+        const int32 tiles_per_chunk = dim.chunk_size_x * dim.chunk_size_y;
+
+        int32 chunk_index;
+        for (chunk_index = 0; chunk_index < chunk_total && ok; ++chunk_index)
+        {
+            const Chunk &chunk = world.chunks[chunk_index];
+            int32 tile_index;
+            for (tile_index = 0; tile_index < tiles_per_chunk; ++tile_index)
+            {
+                const unsigned char value = chunk.tiles[tile_index].terrain_type;
+                ok = ok && write_bytes(file, &value, 1u);
+            }
+        }
+
+        return ok;
+    }
+
+    bool read_world_section(std::FILE *file, World &world, uint32 version)
+    {
+        if (version < kSaveVersionWorld)
+        {
+            return true;
+        }
+
+        uint32 chunk_count_x_u = 0u;
+        uint32 chunk_count_y_u = 0u;
+        uint32 chunk_size_x_u = 0u;
+        uint32 chunk_size_y_u = 0u;
+
+        if (!read_u32(file, chunk_count_x_u) ||
+            !read_u32(file, chunk_count_y_u) ||
+            !read_u32(file, chunk_size_x_u) ||
+            !read_u32(file, chunk_size_y_u))
+        {
+            return false;
+        }
+
+        const int32 chunk_count_x = static_cast<int32>(chunk_count_x_u);
+        const int32 chunk_count_y = static_cast<int32>(chunk_count_y_u);
+        const int32 chunk_size_x = static_cast<int32>(chunk_size_x_u);
+        const int32 chunk_size_y = static_cast<int32>(chunk_size_y_u);
+
+        if (!world_init_with_dimensions(world, chunk_count_x, chunk_count_y, chunk_size_x, chunk_size_y))
+        {
+            return false;
+        }
+
+        const int32 chunk_total = chunk_count_x * chunk_count_y;
+        const int32 tiles_per_chunk = chunk_size_x * chunk_size_y;
+
+        int32 chunk_index;
+        for (chunk_index = 0; chunk_index < chunk_total; ++chunk_index)
+        {
+            Chunk &chunk = world.chunks[chunk_index];
+            int32 tile_index;
+            for (tile_index = 0; tile_index < tiles_per_chunk; ++tile_index)
+            {
+                unsigned char value = 0u;
+                if (!read_bytes(file, &value, 1u))
+                {
+                    return false;
+                }
+                chunk.tiles[tile_index].terrain_type = value;
+                chunk.tiles[tile_index].reserved[0] = 0u;
+                chunk.tiles[tile_index].reserved[1] = 0u;
+                chunk.tiles[tile_index].reserved[2] = 0u;
+            }
+        }
+
+        return true;
+    }
 }
 
 bool save_core_state(const CoreState &state, const char *path)
@@ -99,9 +183,10 @@ bool save_core_state(const CoreState &state, const char *path)
 
     bool ok = true;
     ok = ok && write_u32(file, kSaveMagic);
-    ok = ok && write_u32(file, kSaveVersion);
+    ok = ok && write_u32(file, kSaveVersionWorld);
     ok = ok && write_u64(file, state.tick);
     ok = ok && write_u64(file, state.rng.state);
+    ok = ok && write_world_section(file, state.world);
 
     if (std::fclose(file) != 0)
     {
@@ -124,6 +209,15 @@ bool load_core_state(CoreState &state, const char *path)
         return false;
     }
 
+    if (state.world.chunks == 0)
+    {
+        if (!world_init(state.world))
+        {
+            std::fclose(file);
+            return false;
+        }
+    }
+
     uint32 magic = 0u;
     uint32 version = 0u;
     uint64 tick = 0u;
@@ -132,8 +226,19 @@ bool load_core_state(CoreState &state, const char *path)
     bool ok = true;
     ok = ok && read_u32(file, magic);
     ok = ok && read_u32(file, version);
+
+    if (!ok || magic != kSaveMagic || version < 1u || version > kSaveVersionWorld)
+    {
+        if (ok)
+        {
+            std::fclose(file);
+        }
+        return false;
+    }
+
     ok = ok && read_u64(file, tick);
     ok = ok && read_u64(file, rng_state);
+    ok = ok && read_world_section(file, state.world, version);
 
     if (std::fclose(file) != 0)
     {
@@ -141,11 +246,6 @@ bool load_core_state(CoreState &state, const char *path)
     }
 
     if (!ok)
-    {
-        return false;
-    }
-
-    if (magic != kSaveMagic || version != kSaveVersion)
     {
         return false;
     }

@@ -3,6 +3,7 @@
 #include "core/core_api.h"
 #include "save/save.h"
 #include "save/state_hash.h"
+#include "world/world_grid.h"
 
 namespace
 {
@@ -31,6 +32,14 @@ int main()
         }
     }
 
+    Tile *sample_tile = world_get_tile(original_state.world, 4, 4);
+    if (sample_tile == 0)
+    {
+        core_shutdown(original_state);
+        return 1;
+    }
+    sample_tile->terrain_type = 7u;
+
     const uint64 hash_before = compute_state_hash(original_state);
 
     if (!save_core_state(original_state, kTestPath))
@@ -39,9 +48,18 @@ int main()
     }
 
     CoreState loaded_state;
+    if (!core_init(loaded_state, config))
+    {
+        std::remove(kTestPath);
+        core_shutdown(original_state);
+        return 1;
+    }
+
     if (!load_core_state(loaded_state, kTestPath))
     {
         std::remove(kTestPath);
+        core_shutdown(original_state);
+        core_shutdown(loaded_state);
         return 1;
     }
 
@@ -55,13 +73,27 @@ int main()
 
     if (original_state.rng.state != loaded_state.rng.state)
     {
+        core_shutdown(original_state);
+        core_shutdown(loaded_state);
         return 1;
     }
 
     if (hash_before != hash_after)
     {
+        core_shutdown(original_state);
+        core_shutdown(loaded_state);
         return 1;
     }
 
+    Tile *loaded_tile = world_get_tile(loaded_state.world, 4, 4);
+    if (loaded_tile == 0 || loaded_tile->terrain_type != sample_tile->terrain_type)
+    {
+        core_shutdown(original_state);
+        core_shutdown(loaded_state);
+        return 1;
+    }
+
+    core_shutdown(original_state);
+    core_shutdown(loaded_state);
     return 0;
 }

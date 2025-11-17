@@ -25,6 +25,26 @@ target_link_libraries(test_save_load
         core
         save
         system
+        world
 )
 
 add_test(NAME determinism_save_load COMMAND test_save_load)
+
+add_executable(test_world
+    core/test_world.cpp
+)
+
+target_include_directories(test_world
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/source
+)
+
+target_link_libraries(test_world
+    PRIVATE
+        core
+        save
+        system
+        world
+)
+
+add_test(NAME core_world COMMAND test_world)

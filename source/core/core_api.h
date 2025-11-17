@@ -3,6 +3,7 @@
 
 #include "system/system_base.h"
 #include "system/rng.h"
+#include "world/world_space.h"
 
 struct CoreConfig
 {
@@ -13,6 +14,7 @@ struct CoreState
 {
     Tick tick;
     RngState rng;
+    World world;
 };
 
 bool core_init(CoreState &state, const CoreConfig &config);

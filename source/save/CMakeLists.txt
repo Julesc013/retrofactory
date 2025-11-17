@@ -7,3 +7,8 @@ target_include_directories(save
     PUBLIC
         ${PROJECT_SOURCE_DIR}/source
 )
+
+target_link_libraries(save
+    PUBLIC
+        world
+)
