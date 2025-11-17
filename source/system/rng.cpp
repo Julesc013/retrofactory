@@ -2,21 +2,21 @@
 
 namespace
 {
-    const uint32 kRngMultiplier = 1664525u;
-    const uint32 kRngIncrement = 1013904223u;
+    const uint64 kRngMultiplier = 6364136223846793005ULL;
+    const uint64 kRngIncrement = 1442695040888963407ULL;
 }
 
-void rng_init(rf_rng_state &state, uint32 seed)
+void rng_seed(RngState &state, uint64 seed)
 {
-    if (seed == 0u)
+    if (seed == 0ULL)
     {
-        seed = 1u;
+        seed = 0x4d595df4d0f33173ULL;
     }
-    state.seed = seed;
+    state.state = seed;
 }
 
-uint32 rng_next(rf_rng_state &state)
+uint32 rng_next_u32(RngState &state)
 {
-    state.seed = kRngMultiplier * state.seed + kRngIncrement;
-    return state.seed;
+    state.state = state.state * kRngMultiplier + kRngIncrement;
+    return static_cast<uint32>(state.state >> 32);
 }

@@ -3,12 +3,12 @@
 
 #include "system/system_base.h"
 
-struct rf_rng_state
+struct RngState
 {
-    uint32 seed;
+    uint64 state;
 };
 
-void rng_init(rf_rng_state &state, uint32 seed);
-uint32 rng_next(rf_rng_state &state);
+void rng_seed(RngState &state, uint64 seed);
+uint32 rng_next_u32(RngState &state);
 
 #endif /* SYSTEM_RNG_H */

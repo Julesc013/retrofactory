@@ -12,9 +12,12 @@ typedef uint32_t uint32;
 typedef int64_t int64;
 typedef uint64_t uint64;
 
-typedef int32 entity_id;
-typedef int32 chunk_id;
-typedef int32 network_id;
-typedef int32 research_id;
+typedef uint64 Tick;
+typedef uint64 RandomSeed;
+
+typedef int32 EntityId;
+typedef int32 ChunkId;
+typedef int32 NetworkId;
+typedef int32 ResearchId;
 
 #endif /* SYSTEM_BASE_H */

@@ -2,15 +2,17 @@
 #define CORE_CORE_API_H
 
 #include "system/system_base.h"
+#include "system/rng.h"
 
 struct CoreConfig
 {
-    uint32 reserved;
+    uint64 initial_seed;
 };
 
 struct CoreState
 {
-    uint32 reserved;
+    Tick tick;
+    RngState rng;
 };
 
 bool core_init(CoreState &state, const CoreConfig &config);
