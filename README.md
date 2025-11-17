@@ -3,7 +3,7 @@
 - **Author:** Jules Carboni  
 - **Project:** Retrofactory 
 - **Version:** v10, 2025-11-17  
-- **Status:** Maybe out of date 
+- **Status:** Out of date 
 
 ---
 
