@@ -12,5 +12,5 @@ target_link_libraries(engine
         core
         system
         runtime
-        save
+        interface
 )

@@ -9,10 +9,8 @@ target_include_directories(platform_posix
 
 target_link_libraries(platform_posix
     PUBLIC
-        engine
-        core
-        system
         runtime
+        system
 )
 
 add_executable(retrofactory_posix_stub
@@ -28,6 +26,12 @@ target_link_libraries(retrofactory_posix_stub
     PRIVATE
         platform_posix
         engine
+        interface
+        render
+        runtime
         core
+        world
+        save
         system
+        utility
 )
