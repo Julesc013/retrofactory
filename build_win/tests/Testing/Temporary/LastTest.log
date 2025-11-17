@@ -1,17 +1,17 @@
-Start testing: Nov 18 02:54 AUS Eastern Summer Time
+Start testing: Nov 18 03:10 AUS Eastern Summer Time
 ----------------------------------------------------------
 1/3 Testing: placeholder_run
 1/3 Test: placeholder_run
 Command: "D:/Inbox/GitHub Repos/retrofactory/build_win/tests/Debug/retrofactory_placeholder_test.exe"
 Directory: D:/Inbox/GitHub Repos/retrofactory/build_win/tests
-"placeholder_run" start time: Nov 18 02:54 AUS Eastern Summer Time
+"placeholder_run" start time: Nov 18 03:10 AUS Eastern Summer Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.09 sec
+Test time =   0.03 sec
 ----------------------------------------------------------
 Test Passed.
-"placeholder_run" end time: Nov 18 02:54 AUS Eastern Summer Time
+"placeholder_run" end time: Nov 18 03:10 AUS Eastern Summer Time
 "placeholder_run" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -19,14 +19,14 @@ Test Passed.
 2/3 Test: determinism_save_load
 Command: "D:/Inbox/GitHub Repos/retrofactory/build_win/tests/Debug/test_save_load.exe"
 Directory: D:/Inbox/GitHub Repos/retrofactory/build_win/tests
-"determinism_save_load" start time: Nov 18 02:54 AUS Eastern Summer Time
+"determinism_save_load" start time: Nov 18 03:10 AUS Eastern Summer Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.09 sec
+Test time =   0.03 sec
 ----------------------------------------------------------
 Test Passed.
-"determinism_save_load" end time: Nov 18 02:54 AUS Eastern Summer Time
+"determinism_save_load" end time: Nov 18 03:10 AUS Eastern Summer Time
 "determinism_save_load" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -34,15 +34,15 @@ Test Passed.
 3/3 Test: core_world
 Command: "D:/Inbox/GitHub Repos/retrofactory/build_win/tests/Debug/test_world.exe"
 Directory: D:/Inbox/GitHub Repos/retrofactory/build_win/tests
-"core_world" start time: Nov 18 02:54 AUS Eastern Summer Time
+"core_world" start time: Nov 18 03:10 AUS Eastern Summer Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.08 sec
+Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"core_world" end time: Nov 18 02:54 AUS Eastern Summer Time
+"core_world" end time: Nov 18 03:10 AUS Eastern Summer Time
 "core_world" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Nov 18 02:54 AUS Eastern Summer Time
+End testing: Nov 18 03:10 AUS Eastern Summer Time

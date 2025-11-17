@@ -4,6 +4,7 @@
 #include "render/rnd_api.h"
 #include "runtime/rt_log.h"
 #include "system/system_base.h"
+#include "core/core_api.h"
 
 namespace
 {
@@ -11,6 +12,7 @@ namespace
     const int kDefaultHeight = 480;
     const uint32 kFrameDelayMs = 16u;
     const uint32 kMaxFrames = 600u;
+    const uint64 kLaunchSeed = 0xBEEFCAFEULL;
 }
 
 int launch_run()
@@ -35,6 +37,18 @@ int launch_run()
         return 1;
     }
 
+    CoreConfig core_config;
+    core_config.initial_seed = kLaunchSeed;
+
+    CoreState core_state;
+    if (!core_init(core_state, core_config))
+    {
+        log_error("core_init failed in launch loop");
+        render_shutdown();
+        plat_window_destroy(window);
+        return 1;
+    }
+
     uint32 frame_count = 0u;
     bool running = true;
     while (running)
@@ -43,6 +57,12 @@ int launch_run()
 
         if (!running)
         {
+            break;
+        }
+
+        if (!core_tick(core_state))
+        {
+            log_error("core_tick failed");
             break;
         }
 
@@ -57,6 +77,7 @@ int launch_run()
         }
     }
 
+    core_shutdown(core_state);
     render_shutdown();
     plat_window_destroy(window);
     return 0;

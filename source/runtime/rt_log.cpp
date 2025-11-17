@@ -1,6 +1,6 @@
 #include "runtime/rt_log.h"
 
-#include <cstdio>
+#include "platform/plat_api.h"
 
 namespace
 {
@@ -10,7 +10,30 @@ namespace
         {
             message = "(null)";
         }
-        std::fprintf(stderr, "%s %s\n", prefix, message);
+
+        char buffer[512];
+        buffer[0] = '\0';
+
+        unsigned int offset = 0u;
+        while (prefix[offset] != '\0' && offset < sizeof(buffer) - 1u)
+        {
+            buffer[offset] = prefix[offset];
+            ++offset;
+        }
+
+        if (offset < sizeof(buffer) - 2u)
+        {
+            buffer[offset++] = ' ';
+        }
+
+        unsigned int i = 0u;
+        while (message[i] != '\0' && offset < sizeof(buffer) - 1u)
+        {
+            buffer[offset++] = message[i++];
+        }
+        buffer[offset] = '\0';
+
+        plat_log_message(buffer);
     }
 }
 

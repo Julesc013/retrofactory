@@ -21,6 +21,7 @@ struct PlatWindow;
 
 bool plat_init(const plat_services &services);
 void plat_shutdown();
+void plat_log_message(const char *message);
 
 PlatWindow *plat_window_create(int width, int height);
 void plat_window_destroy(PlatWindow *window);

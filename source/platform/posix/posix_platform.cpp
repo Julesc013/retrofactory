@@ -6,8 +6,10 @@
 #include <new>
 #if defined(_WIN32)
 #include <windows.h>
+#include <cstdio>
 #else
 #include <time.h>
+#include <cstdio>
 #endif
 
 struct PlatWindow
@@ -129,4 +131,16 @@ void plat_sleep_ms(uint32 milliseconds)
     ts.tv_nsec = (milliseconds % 1000u) * 1000000L;
     nanosleep(&ts, 0);
 #endif
+}
+
+void plat_log_message(const char *message)
+{
+#if defined(_WIN32)
+    if (message != 0)
+    {
+        OutputDebugStringA(message);
+        OutputDebugStringA("\n");
+    }
+#endif
+    std::fprintf(stderr, "%s\n", (message != 0) ? message : "(null)");
 }
