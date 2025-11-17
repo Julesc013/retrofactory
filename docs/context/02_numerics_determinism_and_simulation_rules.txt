@@ -1,120 +1,110 @@
-NUMERICS, DETERMINISM, AND SIMULATION RULES
-===========================================
+# Numerics, Determinism, and Simulation Rules
 
-Core principle: any code that affects game state must be deterministic across platforms and builds, given the same inputs and configuration.
+This document defines how numeric types, random numbers, and tick ordering must be implemented to keep the simulation deterministic.
 
-Numeric model
--------------
-Base units:
-- Time: ticks (1/60 s).
-- Position: sub-tile units (e.g. 1/1024 m).
-- Temperature: milliKelvin.
+## Numeric Model
+
+Base units (conceptual):
+
+- Time: ticks (e.g. 60 ticks/sec).
+- Position: sub-tile units (integer grid with fixed-point offsets).
 - Mass: grams.
 - Volume: millilitres.
-- Energy: Joules per tick (local), Joules or similar per time unit where aggregated.
+- Energy: Joules or Joules-per-tick.
+- Temperature: milliKelvin.
 
-Types (typical):
-- Tile coordinates: int32.
-- Sub-tile positions: fixed-point (Q-format; defined in system_base.h/fixed.h).
-- Item counts: int32.
-- Fluid volumes: int32.
-- Mass: int32.
-- Energy: int32 for local, int64 for global accumulators.
-- Temperature: int32 mK.
-- Global tick: uint64.
+Suggested types:
+
+- Tile coordinates: `int32_t`.
+- Sub-tile positions: fixed-point represented as `int32_t` or `int64_t`.
+- Item counts: `int32_t`.
+- Fluid volumes: `int32_t`.
+- Energy: `int32_t` local, `int64_t` for global accumulators.
+- Temperature: `int32_t` (mK).
+- Tick counter: `uint64_t`.
 
 Rules:
-- No floating point in any code path that changes simulation state.
-  - Floats/doubles allowed for rendering, UI layout, camera transforms, debug visualisation.
-- No undefined behaviour:
-  - No signed overflow on semantically bounded quantities.
-  - Strict aliasing observed; avoid unsafe casts on core structures.
-- Behaviour on overflow must be explicit:
-  - Clamp, wrap, or assert — but must be platform-independent.
 
-RNG and randomness
-------------------
-- All randomness must go through `source/system/rng.h`.
-- No `rand()`, `<random>`, or platform-specific RNG allowed in core/world/schedule/save.
-- RNG streams must:
-  - Have explicit seed values.
-  - Be serialised into save files.
-  - Be restored identically on load/replay.
-- Multiple RNG streams may exist (e.g. worldgen, AI, logistics), each must be handled explicitly.
+- No floating-point arithmetic in simulation state updates.
+- Deterministic behaviour on overflow:
+  - If a quantity can overflow, clamp or wrap in a well-defined way.
+- No reliance on implementation-defined behaviour (shifts, signed overflow, etc.).
 
-Deterministic execution
------------------------
-- Every tick uses a single canonical phase ordering defined in `source/schedule/tick.*`.
-- Subsystems register functions with tick phases; ordering must be stable.
-- Parallelisation:
-  - Only allowed if the result is identical (bitwise) to the sequential order.
-  - If in doubt, prefer single-threaded core in v1.
+## RNG Rules
 
-Data structures:
-- In hot simulation paths:
-  - Prefer arrays, index-based vectors, and SoA-like layouts.
-  - Do NOT rely on unspecified hash map iteration orders.
-- For hash-based structures elsewhere:
-  - Hide them behind deterministic ordering when they influence simulation outcomes (e.g. sort keys before processing).
+- All random operations must go through `source/system/rng.h`.
+- RNG features:
+  - Deterministic sequence given a seed.
+  - Serialisable state (for save/load and replays).
+  - Support for multiple RNG streams (worldgen, macro AI, etc.).
+- Forbidden:
+  - `rand()` from `<cstdlib>`.
+  - `<random>` facilities.
+  - Platform-specific randomness APIs.
 
-Save and replay
----------------
-- Save format `.RFS`:
-  - Versioned and documented in `save_format.md`.
-  - Packed structs with explicit endianness and padding rules.
-- Save/Load:
-  - `save.*` is responsible for reading/writing.
-  - `profile` rules enforced when loading (no loading high-profile saves into low-cap builds).
-- State hashing:
-  - Implemented in `state_hash.*`.
-  - Provides deterministic hashes over full or partial simulation state.
-  - Used by:
-    - Replay tests.
-    - Cross-platform determinism CI.
-    - Optional in-game debug verification.
+## Tick Scheduling
 
-Profiles and algorithm tiers
-----------------------------
-Profiles define:
-- Cap limits:
-  - Max colonies, entities, networks, belts, etc.
-- Algorithm choices per system:
-  - E.g. power_algo = simple/advanced, fluid_algo = simple/advanced.
+- `source/schedule/tick.*` defines canonical tick phases and ordering.
+- Example phases (names are illustrative):
+  - `TICK_PHASE_INPUT`
+  - `TICK_PHASE_LOGIC`
+  - `TICK_PHASE_NETWORKS`
+  - `TICK_PHASE_RESEARCH`
+  - `TICK_PHASE_CLEANUP`
+- All systems that update simulation state must be wired through these phases.
+- No out-of-band updates that circumvent the scheduler.
 
-Simulation code must:
-- Respect profile caps (no silent overflows).
-- Select algorithms based on profile data (not hard-coded edition checks).
-- Maintain determinism across profiles; profiles change complexity and caps, not logical correctness.
+## Event System
 
-World model invariants
-----------------------
-- World hierarchy:
-  - Tiles → Chunks → Regions → Colonies → Surfaces → Planets → (Space layer).
-- No cyclic references; structures form a DAG/hierarchy with clear parent/child relationships.
-- Cross-colony and cross-planet interactions:
-  - Only via transit manifests and macro models; no direct pointers across colonies.
+- `source/schedule/events.*` provides event queues.
+- Events must be:
+  - Local to the tick (or explicitly delayed to future tick).
+  - Delivered in deterministic order.
+- Use events to decouple systems (e.g. logistic events into network code) without breaking determinism.
 
-Transit and macro geography
----------------------------
-- Transit graphs:
-  - Nodes: colonies, ports, orbital stations, space hubs.
-  - Edges: shipping lanes, rail corridors, flight paths, space routes.
-- Transit manifests:
-  - Aggregate flows (items/fluids/people) along edges.
-  - Deterministic update rules (no random arrival noise by default).
-- Macro systems:
-  - AI colonies, trade networks, and policies must be driven by deterministic state machines and numeric models.
+## Save/Load and State Hashing
 
-Testing requirements
---------------------
+- `source/save/save.*`:
+  - Versioned `.RFS` save format with explicit layout and endianness.
+  - Kernels must not assume host endianness or struct packing.
+- `source/save/state_hash.*`:
+  - Computes stable hashes across:
+    - Tick counter.
+    - RNG state.
+    - World state.
+    - Core system state (networks, research, etc.).
+  - Used for:
+    - Replay verification.
+    - Cross-platform determinism tests.
+
+Requirements:
+
+- After save + load:
+  - Core state, world state, RNG, and hash must match.
 - Replays:
-  - Deterministic replay tests with known seeds and inputs must reproduce state hashes identically across supported compilers and platforms.
-- Worldgen:
-  - Given a seed and profile, worldgen must produce identical tile/chunk layouts.
-- Transit:
-  - Manifest counts and timings must survive save/load without drift.
+  - Running the same input sequence must produce identical hashes at known checkpoints.
 
-Codex must preserve:
-- Determinism in any change touching core/world/schedule/save.
-- Fixed-point and integer usage in simulation code.
-- Proper use of `state_hash` for new determinism tests.
+## Profiles and Algorithm Tiers
+
+Profiles (defined in data and reflected in `source/config/profile.*`) decide:
+
+- Caps:
+  - Max entities, chunks, networks, etc.
+- Algorithm tiers:
+  - Simple vs advanced network algorithms, heuristics, or approximations.
+
+Core rules:
+
+- Profile selection must not break determinism.
+- Differences between profiles:
+  - Change complexity and capacity, not correctness.
+- All profile-driven decisions must be data-driven; no hard-coded edition checks in simulation code.
+
+## Macro Layer and Transit
+
+- Transit systems are modelled deterministically:
+  - Manifests and schedules are computed with fixed rules.
+  - Arrival times and flows are not perturbed with noise unless derived from RNG streams that are properly serialised.
+- Macro AI must behave deterministically given the same inputs.
+
+Any code generation that influences simulation must respect all of the above rules.

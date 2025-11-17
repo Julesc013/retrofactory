@@ -1,117 +1,105 @@
-EDITIONS, PROFILES, AND PLATFORMS
-=================================
+# Editions, Profiles, and Platforms
 
-Editions
---------
-Each edition is a packaged combination of:
-- Platform front-end(s) under `source/platform/`.
-- One or more profiles (caps and algorithm tiers).
-- Bundled official mods (base, space, planet packs).
+This document captures how editions map onto platform code and performance profiles.
 
-Canonical editions:
-- 1x: MS-DOS (3–8).
-- 3x: Windows 3.x.
-- 9x: Windows 95/98/Me.
-- Nx: Windows NT family (2000/XP/7/10/12).
-- Lx: Linux/BSD desktop.
-- Mx: macOS.
-- Cx: Classic Mac (System 7–9).
-- Ax: Android.
-- Wx: WebAssembly/WebGL.
+## Editions
 
-Edition mapping to platforms (final code tree):
-- 1x → `platform/msdos/`.
-- 3x → `platform/win16/`.
-- 9x/Nx → `platform/win32/` (with config differences and render matrix selection).
-- Lx → `platform/posix/`.
-- Mx → reuse `posix/` plus Mac-specific front-end later if needed.
-- Cx → planned future `platform/classicmac/` (not yet in final tree).
-- Ax → planned future `platform/android/` (not yet in final tree).
-- Wx → `platform/webasm/`.
+Conceptual edition IDs:
 
-Profiles
---------
-Profiles are defined in:
-- `data/base/prototypes/profiles.json` (canonical data).
-- Mapped to config presets in `config/edition_*.cfg`.
+- **1x** – MS-DOS (DOS 3–8).
+- **3x** – Windows 3.x.
+- **9x** – Windows 9x family.
+- **Nx** – Windows NT family.
+- **Lx** – POSIX desktop (Linux/BSD).
+- **Wx** – WebAssembly/WebGL (browser).
+- Others (classic Mac, Android) are future variants.
 
-Examples:
-- Tier0_low:
-  - For 1x/3x/9x baseline.
-  - Single colony.
-  - Tight caps on entities, networks, robots.
-  - Simple algorithms for power/fluids/heat/logistics.
-- Tier1_mid:
-  - For Nx/Lx low-mid, Wx full.
-  - Multiple colonies.
-  - Moderate caps.
-  - Mixed algorithms (simple where possible, advanced where needed).
-- Tier2_high:
-  - For Nx/Mx high-end.
-  - Many colonies and large maps.
-  - Advanced network algorithms enabled.
+Each edition is described by:
 
-Engine behaviour:
-- Engine reads `profiles.json` and `edition_*.cfg`:
-  - Uses `profile.*` to map profile ID -> numeric caps and algorithm choices.
-  - Applies overrides per edition where needed (e.g. disable certain renderers for Wx).
-- Core systems and networks query profile data, not edition names.
+- An edition config file under `config/`.
+- A subset of supported platforms/renderers.
+- A set of allowed profiles and content packs.
 
-Platform layer responsibilities
--------------------------------
-source/platform/:
-- plat_api.h:
-  - Defines functions for:
-    - Window/surface creation and teardown.
-    - Input polling.
-    - Audio playback.
-    - Filesystem operations.
-    - Time/tick queries.
-    - Logging sinks.
-- plat_ids.h:
-  - IDs for platforms, editions, and possibly profile hints.
+## Platform Mapping
 
-Per-platform code:
-- msdos/:
-  - dos32_main.cpp: entrypoint; sets up DOS environment and calls engine/launcher.
-  - dos32_platform.cpp: implements plat_api using CGA/EGA/VGA, keyboard, PC speaker/SB, DOS FS.
+`source/platform/` contains per-platform code:
 
-- win16/:
-  - win16_main.cpp: WinMain for 16-bit Windows.
-  - win16_platform.cpp: GDI, MME audio, 16-bit FS/time/input.
+- `msdos/` – used for 1x edition.
+- `win16/` – used for 3x edition.
+- `win32/` – used for 9x and Nx editions (with different config).
+- `posix/` – used for Lx edition.
+- `web/` – used for Wx edition.
 
-- win32/:
-  - win32_main.cpp: WinMain for 32-bit Windows (used by both 9x and NT by config).
-  - win32_platform.cpp: Win32 windowing, input, audio, FS/time, GL/DX context creation.
+Common interface:
 
-- posix/:
-  - posix_main.cpp: main() for Unix-like systems.
-  - posix_platform.cpp: SDL/X11/Wayland windowing, audio, FS/time.
-  - posix_net.cpp: POSIX socket networking.
+- `plat_api.h` – abstract API for:
+  - Window/surface creation and events.
+  - Input polling.
+  - Audio playback.
+  - Filesystem access.
+  - Time/tick/sleep functions.
+  - Logging sinks.
+- `plat_ids.h` – platform IDs and optional mapping to edition IDs.
 
-- webasm/:
-  - web_main.cpp: Emscripten main.
-  - web_platform.cpp: WebGL, WebAudio, browser FS/time/net bridging.
+Each `<platform>_main.cpp`:
 
-Render matrix
--------------
-Allowed renderer per edition is controlled by:
-- `config/render_matrix.cfg`.
-- `engine/eng_config.*` reads render_matrix and selects a backend via `rnd_pick`.
+- Contains the entrypoint (`main` or `WinMain`).
+- Bootstraps platform-specific context.
+- Invokes engine/launcher entrypoints from `source/engine` / `source/interface`.
 
-Example rules (conceptual):
-- 1x, 3x:
-  - Only `rnd_sw` in low resolutions.
-- 9x:
-  - `rnd_sw`, `rnd_dx5`, maybe `rnd_gl1`.
-- Nx/Lx/Mx:
-  - `rnd_sw`, `rnd_gl1`, `rnd_gl2` depending on GPU and drivers.
-- Wx:
-  - WebGL (via GL-like backend in `rnd_gl1`/`rnd_gl2`) only.
+## Profiles
 
-Codex constraints:
-- Do not bake edition-specific behaviour in core/world/schedule/save.
-- Edition-specific differences must be expressed via:
-  - Profiles (caps/algorithms).
-  - Config files (edition_*.cfg, render_matrix.cfg).
-  - Platform layer behaviour (e.g. fullscreen options).
+Profiles are defined in data (`data/base/prototypes/`) and mirrored in config:
+
+- Data-driven fields:
+  - Max colonies, entities, chunks, networks.
+  - Algorithm variants (simple, advanced).
+  - Feature toggles.
+- Config-driven fields:
+  - Selected profile per edition (`config/edition_*.cfg`).
+  - Allowed combinations for content packs.
+
+`source/config/profile.*`:
+
+- Maps profile IDs to:
+  - Caps.
+  - Algorithm tier choices.
+  - Enabled/disabled features (e.g. advanced fluid network).
+
+Engine usage:
+
+- Engine reads:
+  - `config/edition_*.cfg`.
+  - Profile definitions from `data/base/prototypes`.
+- Constructs an effective runtime profile object used by core/world modules.
+
+## Render Matrix
+
+`config/render_matrix.cfg`:
+
+- Describes which render backends are allowed per edition/platform combination.
+- Example rules:
+  - 1x (msdos): software renderer only (`rnd_sw`) at fixed resolutions.
+  - 3x (win16): software renderer via GDI or equivalent.
+  - 9x (win32): software + `rnd_dx5` (and optionally `rnd_gl1`).
+  - Nx (win32): software + `rnd_gl1` + `rnd_gl2` depending on hardware.
+  - Lx (posix): software + `rnd_gl1` + `rnd_gl2`.
+  - Wx (web): GL-like backend via WebGL.
+
+Renderer selection:
+
+- `source/render/rnd_pick.*` reads:
+  - Effective profile.
+  - Render matrix.
+  - Platform capabilities via `plat_api`.
+- Chooses a backend and configures it for engine/interface.
+
+## Rules for Core Code
+
+- Core and world modules:
+  - Must not directly check edition or platform.
+  - Only see profiles and generic capabilities.
+
+- Edition- or platform-specific behaviour:
+  - Expressed via profiles, config files, and platform/render modules.
+  - Not embedded as ad-hoc checks in core simulation code.

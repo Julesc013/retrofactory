@@ -1,52 +1,70 @@
-PROJECT: Retrofactory
+# Retrofactory – Overview and Goals
 
-Short description:
-Retrofactory is a Factorio-like factory simulation game with a highly portable, deterministic core. It targets retro and modern platforms (MS-DOS, Windows 3.x/9x/NT, POSIX, WebAssembly) via clean separation between core simulation, platform glue, rendering backends, and UI.
+## Project Summary
 
-High-level architecture:
-- Deterministic core simulation (C++98 subset, largely C-style).
-- World/topology layer (planets/surfaces/colonies/tiles/transit).
-- Scheduler/tick system.
-- Save/load + deterministic hashing for replay.
-- Engine layer orchestrating core, mods, runtime, render, platform.
-- Mod loader and dependency graph.
-- Runtime services (config, paths, logging, profiling, error handling, save manager).
-- Utility helpers (containers, strings, paths, hashing, fixed-point, geometry).
-- Render backends (software, GL1, DX5, GL2).
-- Interface layer (UI, launcher, networking).
-- Platform-specific front-ends (DOS, Win16, Win32, POSIX, WebAssembly).
-- Tools + tests.
+Retrofactory is a deterministic, Factorio-like factory and colony simulation game that runs on a wide spectrum of hardware and operating systems, from MS-DOS and early Windows to modern POSIX and Web.
 
-Primary goals:
-1. Determinism:
-   - All gameplay simulation must be deterministic across platforms when given the same input stream and config.
-   - Use fixed-point and integer math in the core; avoid floats in hot simulation paths.
+A single core simulation engine is shared across all editions. Each edition is a different packaging of:
 
-2. Portability:
-   - Core and most of the engine must compile with old C/C++ compilers (e.g. MSVC 6, Watcom, etc.).
-   - Isolate OS, windowing, and API-specific details into `source/platform/` and render backends.
+- Front-end platform code,
+- Render backend choice(s),
+- Performance profile(s),
+- Content packs (base + planets + space).
 
-3. Extensibility:
-   - Every major subsystem lives in its own module (core, world, energy, logistics, research, mods, render, platform, UI).
-   - Mods can add content and later script/native extensions without embedding platform logic into core.
-   - It must be possible to replace or disable a subsystem (e.g. swap render backend, add/remove mod, change platform) with minimal coupling.
+## Primary Goals
 
-4. Replaceability:
-   - Core simulation should not depend on rendering, UI, platform specifics, or tool code.
-   - Render backends should depend only on snapshots from the engine, not on core internals.
-   - Platform implementations should only implement `plat_api.h` and call engine/interface entrypoints.
+- **Deterministic core**
+  - All gameplay state updates are deterministic across platforms for a given input stream.
+  - Fixed-point / integer numerics in simulation; no floats in state-changing code paths.
+  - Centralised RNG with fully serialisable state.
 
-5. Retro-friendliness:
-   - Keep memory use and CPU demand reasonable for old hardware.
-   - Avoid heavy STL usage and modern language features in the portable parts.
+- **Portability**
+  - Core, world, schedule, save, runtime, and utility code must compile with old C++ compilers.
+  - OS-, window-, and graphics-specific code is isolated under `source/platform` and `source/render`.
 
-Main languages:
-- Core/engine: C++98 subset (no exceptions, no RTTI), but written in a C-like style where helpful.
-- Platform code may use more host-specific features if needed, but keep headers clean for old compilers.
-- Tools and tests can be more relaxed (newer C++ if we want), but should not affect core or platform build requirements.
+- **Extensibility**
+  - Clear module boundaries: core, world, schedule, save, engine, mods, runtime, utility, render, interface, platform.
+  - Content provided as data packs (base, planets, space) and later mods.
+  - Room for script and native extensions without polluting core.
 
-Key invariants for Codex to respect:
-- DO NOT introduce exceptions or RTTI into `source/core/`, `source/world/`, `source/schedule/`, `source/save/`, `source/system/`.
-- DO NOT introduce platform-specific includes or APIs into core/world/schedule/save.
-- DO keep public APIs stable and focused: `core_api.h`, `mod_api.h`, `plat_api.h`, `rnd_api.h` are the main external faces.
-- Maintain determinism in any code that affects simulation state or save/load.
+- **Replaceability**
+  - Each major subsystem lives in its own directory.
+  - It must be possible to swap:
+    - Render backend,
+    - Platform implementation,
+    - Content pack,
+    - Mod layer,
+    without touching core simulation logic.
+
+- **Retro friendliness**
+  - Conservative CPU and memory usage.
+  - Avoid heavy runtime features (exceptions, RTTI, heavy STL) in kernel modules.
+  - Buildable with retro toolchains for MS-DOS and early Windows where possible.
+
+## High-Level Architecture
+
+- **Data**
+  - `data/base` – core game content.
+  - `data/{mercury,venus,mars,jupiter,saturn,space}` – planetary/space packs.
+- **Code**
+  - `source/system` – basic types and RNG.
+  - `source/core` – core simulation systems (items, energy, logistics, networks, research).
+  - `source/world` – world topology and grids.
+  - `source/schedule` – tick phases and events.
+  - `source/save` – save/load and deterministic state hashing.
+  - `source/config` – profiles and versioning.
+  - `source/engine` – host glue around the core.
+  - `source/mods` – mod plumbing (data, script, binary).
+  - `source/runtime` – config, logging, profiling, error, save manager.
+  - `source/utility` – containers, strings, paths, hashing, fixed math, geometry.
+  - `source/render` – software and GPU backends.
+  - `source/interface` – UI, launcher, networking.
+  - `source/platform` – OS-specific entrypoints and glue.
+
+## Intended Use of These Context Files
+
+- Loaded by code-generation tools (e.g. Codex) as always-on constraints.
+- Define:
+  - Which modules may depend on which.
+  - Where new features should be implemented.
+  - Language and determinism rules that cannot be violated.

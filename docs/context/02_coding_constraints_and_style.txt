@@ -1,102 +1,89 @@
-CODING CONSTRAINTS AND STYLE FOR RETROFACTORY
-=============================================
 
-Goal:
-- Make all core and engine code portable and deterministic.
-- Keep platform and render code isolated.
-- Make components easy to replace (core, render, platform, mods).
 
-Language/version:
-- Core, world, schedule, save, system, engine, mods, runtime, utility:
-  - C++98 subset (effectively C with some classes where useful).
-  - NO exceptions.
-  - NO RTTI (no dynamic_cast, no typeid).
-  - Avoid heavy STL containers in portable code (especially in hot paths).
-- Platform and tools/tests:
-  - Can use more modern C++ and limited STL where it doesn’t affect core portability.
-  - Still avoid exceptions in code paths that can propagate into core.
+---
 
-Determinism:
-- All simulation logic in `source/core/`, `source/world/`, `source/schedule/`, and `source/save/` must be deterministic.
-- Use fixed-point or integer math for core simulation values. Floats can be used for:
-  - rendering calculations,
-  - UI,
-  - non-sim diagnostics.
-- Randomness must go through `system/rng.h`:
-  - No use of `rand()`, `<random>`, or other platform RNGs.
-  - All RNG state must be serialisable.
+### `docs/context/02_coding_constraints_and_style.md`
 
-Dependency rules:
-- core/world/schedule/save/system:
-  - NO includes of platform headers.
-  - NO direct calls to OS APIs, render APIs, or any functions from `source/platform/`, `source/render/`, `source/interface/`.
-  - Allowed to depend on `system/`, `utility/`, and `config/profile/version`.
-- engine:
-  - May call into core/world/schedule/save.
-  - May call into runtime and mods.
-  - May call render, interface, and plat APIs through their public headers.
-- mods:
-  - Everything exports through `mod_api.h` and related headers.
-  - Do not include internal core headers directly in mod code.
-- runtime:
-  - Provides services (config, log, profile, error, save_mgr, config_paths).
-  - Can see platform abstractions only via `plat_api.h`.
-- render:
-  - Consumes snapshots from engine.
-  - NO direct access to core internals.
-- interface:
-  - Talks to engine and render, uses plat API for input/windowing.
-- platform:
-  - Implements `plat_api.h` functions on each OS.
-  - Calls into engine/interface entrypoints only, never into core/world directly.
+```markdown
+# Coding Constraints and Style
 
-File placement rules:
-- Simulation logic belongs in:
-  - `source/core/` (systems),
-  - `source/world/` (topology/grid),
-  - `source/schedule/` (tick/events).
-- Save/load and determinism hashing logic lives in `source/save/`.
-- Resource/config path resolution and config file parsing live in `source/runtime/rt_config_paths.*`.
-- Rendering code lives in `source/render/` files ONLY.
-- UI-related code lives in `source/interface/` files ONLY.
-- OS-specific code (WinAPI, POSIX, SDL, Emscripten, etc.) must go into `source/platform/*`.
+This document covers language/version constraints and general coding style. Behavioural prohibitions and requirements are extended in `05_coding_rules_requirements_and_prohibitions.md`.
 
-Extensibility patterns:
-- To add a new core system:
-  - Add new header/Cpp in `source/core/` (or extend existing `energy`, `logistic`, etc.).
-  - Expose only minimal hooks from `core_api.h` if required by engine/render/interface.
-- To add a new render backend:
-  - Add `rnd_<backend>.h/.cpp` in `source/render/`.
-  - Extend `rnd_pick.cpp` to recognise and select it.
-- To add a new platform:
-  - Add a new subdirectory under `source/platform/` with `<os>_main.cpp` and `<os>_platform.cpp`.
-  - Implement `plat_api.h` for that OS.
-- To add a new mod:
-  - Add a new folder under `data/mods/`, with `manifest.json` and prototypes.
-  - Mod API and loader functionality should route through `mod_api.h`, `mod_loader`, and `mod_registry`.
+## Language and Compiler Targets
 
-Splitting/merging guidance:
-- Do NOT merge:
-  - core systems (item, energy, logistic, networks, research) into a giant monolith.
-  - render backends into one file.
-  - platform code across OSes (each OS stays in its own subdir).
-- Safe to split in the future when files get too large:
-  - energy.cpp → energy_power.cpp, energy_fluid.cpp, energy_heat.cpp.
-  - world_space.cpp → world_planet.cpp, world_colony.cpp, etc.
-  - world_grid.cpp → grid_tiles.cpp, grid_index.cpp.
-  - ui_system.cpp → ui_widgets.cpp, ui_layout.cpp, ui_skin.cpp.
-  - *_platform.cpp → video/input/audio/fs/time-specific files.
+Kernel modules (`source/system`, `source/core`, `source/world`, `source/schedule`, `source/save`, `source/config`, `source/engine`, `source/mods`, `source/runtime`, `source/utility`):
 
-General style:
-- Prefer plain old data structs and free functions for core simulation.
-- Use simple enums, not enum class, for C++98 compatibility.
-- Use explicit include guards in all headers.
-- Avoid templates in core hot paths; templates in `utility/containers.h` are acceptable.
-- Keep headers focused and avoid leaking transitive dependencies (forward-declare where practical).
+- Use C++98 subset.
+- Must compile on:
+  - Modern compilers (GCC/Clang/MSVC).
+  - Older compilers suitable for DOS/Win16/Win32 where feasible.
 
-If Codex needs to decide where to put new code or what to include:
-- If it touches gameplay state or tick logic, it belongs in core/world/schedule.
-- If it touches saving/loading or determinism hashes, it belongs in save.
-- If it touches configs or filesystem locations, it belongs in runtime/rt_config_paths or runtime/rt_save_mgr.
-- If it draws things on screen, it belongs in render or interface, not core.
-- If it uses OS APIs, it belongs in platform.
+Platform modules and tools/tests:
+
+- May use a slightly more modern C++ (but avoid advanced features if not needed).
+- May use limited STL containers and utilities where they do not leak into kernel interfaces.
+
+## Allowed Features (Kernel)
+
+- POD structs and simple classes.
+- Namespaces.
+- Plain `enum` types.
+- Simple templates in `source/utility` and non-hot paths.
+- Inline functions for small utilities.
+
+## Forbidden Features (Kernel)
+
+- Exceptions:
+  - No `throw`, `try`, or `catch`.
+- RTTI:
+  - No `dynamic_cast` or `typeid`.
+- Heavy STL in hot paths:
+  - Minimise use of `std::vector`, `std::map`, etc.
+  - No unordered containers that introduce non-deterministic iteration order.
+- Platform-specific headers in kernel modules:
+  - No `<windows.h>`, `<pthread.h>`, `<emscripten.h>`, etc. in core/world/schedule/save/system/config/utility.
+
+## Determinism-Related Style
+
+- No floating-point arithmetic in any path that mutates simulation state or affects decisions.
+- All random behaviour must go through `source/system/rng.*`.
+- Functions that mutate state must have explicit, narrow responsibilities.
+- No hidden reads/writes through global state in kernel code, except where strictly justified and documented (e.g. global config or profiles).
+
+## Header and Include Discipline
+
+- Each header must have a unique include guard.
+- Minimise dependencies:
+  - Prefer forward declarations in headers where possible.
+  - Include implementation details in `.cpp` files instead of `.h`.
+- Avoid cyclic dependencies:
+  - Use opaque handles/IDs and forward declarations to break cycles.
+
+## Naming Conventions
+
+- File names:
+  - Lowercase with underscores where necessary (`core_api.h`, `world_space.h`, `state_hash.cpp`).
+- Types:
+  - `CamelCase` for types (`CoreState`, `WorldGrid`).
+- Functions:
+  - `snake_case` for functions (`core_init`, `compute_state_hash`).
+- Constants:
+  - `UPPER_SNAKE_CASE` for compile-time constants, especially in config or system_base.
+
+## Error Handling
+
+- Kernel:
+  - Return status codes, error enums, or use dedicated error-reporting APIs in `source/runtime/rt_error.*`.
+  - No exceptions.
+- Platform/tools:
+  - May use exceptions if strictly contained and not visible at kernel boundaries (prefer not to).
+
+## Testing Expectations
+
+- New kernel features:
+  - Require at least basic tests under `tests/`:
+    - Correctness tests.
+    - If they influence determinism, add replay/hash tests.
+- Use test naming that reflects module and feature.
+
+This style and constraint set is mandatory for any code generation or refactoring in this project.

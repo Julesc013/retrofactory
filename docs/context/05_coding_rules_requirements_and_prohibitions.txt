@@ -1,129 +1,104 @@
-CODING RULES, REQUIREMENTS, AND PROHIBITIONS
-===========================================
 
-Language level
---------------
-Core/kernel modules (system, core, world, schedule, save, config, engine, mods, runtime, utility):
-- Use C++98 subset.
-- Prefer a C-like style with simple classes/structs as needed.
 
-Allowed:
-- POD structs and light classes.
-- Namespaces.
-- Plain enums (not enum class).
-- Simple templates (especially in `utility/containers.h`).
-- RAII in non-critical paths if it does not introduce exceptions.
+---
 
-Forbidden:
-- Exceptions (`throw`, `try`, `catch`) in all kernel code.
-- RTTI (`dynamic_cast`, `typeid`) in kernel code.
-- Non-deterministic operations in simulation paths.
-- Heavy STL in hot paths (especially `std::map`, `std::unordered_*`, `std::list`).
-- Platform-specific headers in core/world/schedule/save.
+### `docs/context/05_coding_rules_requirements_and_prohibitions.md`
 
-Platform and tools code (platform, tools, tests):
-- Can use more modern C++ and selected STL types if it does not leak into kernel interfaces.
-- Should still avoid exceptions in code that interacts with core APIs.
+```markdown
+# Coding Rules, Requirements, and Prohibitions
 
-Determinism constraints
------------------------
-- No floating-point arithmetic in any function that mutates game state or influences simulation decisions.
-- All random behaviours go through `rng.*` and are serialised via save state.
-- Tick order and system update order must be stable and data-driven (defined by `schedule/tick.*`).
+This document consolidates hard rules. It extends the style notes in `02_coding_constraints_and_style.md`.
 
-Dependency rules
-----------------
-Core/kernel modules MAY depend on:
-- `system/` (system_base, rng).
-- `utility/` (containers, string/path, hash, fixed, geom).
-- `config/profile.h` and `config/version.h`.
-- Other kernel modules as per the defined layering.
+## Absolutely Required
 
-Kernel modules MUST NOT depend on:
-- `source/render/`.
-- `source/interface/`.
-- `source/platform/`.
-- Any OS or graphics headers.
-- Any tool or test code.
+1. **Determinism in Kernel**
+   - All simulation state updates in:
+     - `source/core`
+     - `source/world`
+     - `source/schedule`
+     - `source/save`
+   must be deterministic given the same inputs, config, and content.
 
-Render layer:
-- Uses snapshots from engine; must not modify core state.
-- Can use floating point and GPU APIs.
+2. **C++98 Subset for Kernel**
+   - Kernel modules must compile as C++98:
+     - No exceptions.
+     - No RTTI.
+     - No C++11+ features.
 
-Interface layer:
-- Talks to engine and render, consumes platform input.
-- No direct dependency on core internals outside of `core_api` and engine APIs.
+3. **Centralised RNG**
+   - All random behaviour uses `source/system/rng.*`.
+   - RNG state must be serialisable and part of save/load.
 
-Platform layer:
-- Implements `plat_api.h` for each platform.
-- Provides main/entrypoint functions.
-- Never directly manipulates core/world state.
+4. **Strict Module Dependencies**
+   - Kernel modules must not include platform headers.
+   - Render must not depend on core internals beyond public APIs.
+   - Platform must not depend directly on core internals, only on engine/interface entrypoints.
 
-File and module growth policy
------------------------------
-The current directory/file structure is the baseline. Codex must respect these rules:
+5. **Save and Hash**
+   - Save/load must preserve state exactly for core/world.
+   - `state_hash` must be stable across platforms and compilers.
 
-1. Do NOT:
-   - Add new top-level modules under `source/` without explicit design justification.
-   - Split existing modules into many tiny files unless the single file has become clearly unwieldy (e.g. thousands of lines and logically separable subsystems).
-   - Recreate separate `hash` modules (we already have `utility/hash.*` and `save/state_hash.*`).
+6. **Tests for Simulation Changes**
+   - Any change to simulation logic, numeric types, or profiles must have accompanying tests in `tests/`.
 
-2. Prefer:
-   - Adding related functions to existing modules when extending functionality:
-     - New energy-related behaviour → `core/energy.*`.
-     - New logistics algorithm → `core/logistic.*`.
-     - New profile property → `config/profile.*`.
-     - New render backend selection logic → `render/rnd_pick.*`.
-   - Keeping simulation logic cohesive within a few large files per subsystem, rather than over-fragmented.
+## Forbidden in Kernel
 
-3. Planned split points (only when really needed):
-   - `core/energy.cpp` → may later split into `energy_power.cpp`, `energy_fluid.cpp`, `energy_heat.cpp` when complexity grows.
-   - `world_space.cpp` → may split into `world_planet.cpp`, `world_colony.cpp`, etc.
-   - `world_grid.cpp` → may split into `grid_tiles.cpp` and `grid_index.cpp`.
-   - `ui_system.cpp` → may split into `ui_widgets.cpp`, `ui_layout.cpp`, `ui_skin.cpp`.
-   - `*_platform.cpp` → may split into video/input/audio/fs/time per platform.
+- Exceptions: `throw`, `try`, `catch`.
+- RTTI: `dynamic_cast`, `typeid`.
+- Heavy STL in hot paths:
+  - `std::map`, `std::unordered_*`, `std::list` and similar.
+- Platform or graphics includes (Windows, POSIX, SDL, OpenGL, DirectX, Emscripten).
+- Using wall-clock time, threads, or external I/O in simulation paths.
+- Floating point arithmetic in simulation state updates.
 
-General style
--------------
-- Use explicit include guards in all headers.
-- Keep includes minimal and prefer forward declarations where possible.
-- No global mutable state outside of clearly defined singletons or context structs; prefer explicit state objects passed around.
-- Use struct-based configuration objects rather than ad-hoc globals.
-- Avoid macros for logic; restrict them to include guards and small compile-time switches where necessary.
+## Strongly Discouraged
 
-Function design
----------------
-- Prefer fewer, well-parameterised functions in one module over scattering small functions across multiple modules.
-- Do not aggressively micro-split functions unless:
-  - It significantly improves clarity.
-  - Or you need to isolate a clearly distinct algorithm.
+- Over-fragmenting modules into many tiny files.
+- Global mutable state that is not clearly owned or serialised.
+- Hidden dependencies between modules (e.g. core reaching into engine internals).
 
-- For simulation functions:
-  - Keep signatures explicit about which state they read/write.
-  - Avoid hidden side effects across unrelated subsystems.
+## Permitted with Caution
 
-Testing and CI expectations
----------------------------
-- Any change to:
-  - Simulation logic (core/world/schedule/save).
-  - Numeric types or units.
-  - Profiles or edition behaviour.
-  - Save format or state hashing.
-must be accompanied by appropriate tests under `tests/`:
-  - Determinism/replay tests where applicable.
-  - Perf tests if it affects performance.
+- STL in non-hot paths (e.g. runtime config parsing, mod discovery).
+- Templates in `source/utility` where they simplify containers or math.
+- More modern C++ features and STL in:
+  - `source/platform`
+  - `tools/`
+  - `tests/`
+as long as they are kept out of kernel interfaces.
 
-Forbidden shortcuts
--------------------
-Codex must NOT:
-- Introduce any simulation changes that depend on wall-clock time, threads, or OS-level randomness.
-- Embed platform-specific code in core/world/schedule/save.
-- Hard-code edition or platform-specific logic in core (e.g. `if (edition == 1x)` in simulation code).
-- Bypass the mod loader to inject content from code; all content belongs in `data/`.
+## File/Module Growth Strategy
 
-If in doubt:
-- Place new simulation logic in core/world/schedule/save.
-- Place new config/path/save-slot logic in runtime.
-- Place new rendering logic in render.
-- Place new UI or network protocol logic in interface.
-- Place OS-specific code in the appropriate `platform` subdirectory.
+- Prefer to extend existing modules rather than creating new directories.
+  - New logistics behaviour → `source/core/logistic.*`.
+  - New energy detail → `source/core/energy.*`.
+  - New profile field → `source/config/profile.*`.
+- Only split large modules when:
+  - Single file is clearly too large and internally separable.
+  - Split respects existing dependencies and layering.
+
+## Edition and Platform Logic
+
+- Forbidden:
+  - `if (edition == 1x)` or `if (platform == msdos)` checks in kernel code.
+- Allowed:
+  - Data-driven differences using profiles and content.
+  - Platform-specific behaviour in `source/platform`.
+  - Render differences in `source/render`.
+
+## Behaviour for Code Generation
+
+Any automated code generation must:
+
+- Use the directory/module mapping from `01_repo_layout_and_module_responsibilities.md`.
+- Place new code in the minimal correct module.
+- Not introduce new top-level modules or directories without explicit design.
+- Check whether a feature belongs in:
+  - `core/world/schedule/save` (simulation),
+  - `runtime` (config, logging, save slots),
+  - `render` (drawing),
+  - `interface` (UI, networking),
+  - `platform` (OS-specific behaviour),
+  - `tools` or `tests`.
+
+Violations of any of these rules are considered design bugs.

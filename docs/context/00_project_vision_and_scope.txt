@@ -1,51 +1,61 @@
-PROJECT: Retrofactory
+# Retrofactory – Project Vision and Scope
 
-Short description
------------------
-Retrofactory is a deterministic, Factorio-like factory and colony simulation game designed to run on a very wide range of hardware, from MS-DOS and early Windows to modern desktop, mobile, and WebAssembly platforms.
+## Vision
 
-A single canonical simulation engine drives all full editions. Front-ends vary by platform, but the rules, numerics, and core behaviour are shared.
+Retrofactory is a long-lived, archival-friendly factory and colony simulation built to:
 
-Key concepts
-------------
-Kernel vs content:
-- "Kernel" = engine + simulation code under `source/`:
-  - Core simulation logic.
-  - World topology and networks.
-  - Save/load and determinism.
-  - Mod loader and runtime services.
-- "Core game" (rf-core in the spec) = base data pack under `data/base`:
-  - Items, entities, recipes, tech tree, worldgen templates.
-- "Space expansion" (rf-space in the spec) = official mod under `data/mods/rf_space`.
+- Outlive individual hardware generations.
+- Run on retro and modern systems with a unified ruleset.
+- Support deep modding and multiple thematic content packs.
+- Serve as an experimental platform for deterministic simulation design.
 
-One game, many front-ends:
-- Retro editions:
-  - 1x: MS-DOS 3–8.
-  - 3x: Windows 3.0–3.11.
-  - 9x: Windows 95/98/Me.
-  - Cx: Classic Mac (System 7–9).
-- Modern editions:
-  - Nx: Windows NT family (2000/XP/7/10/12).
-  - Lx: Linux.
-  - Mx: macOS.
-  - Ax: Android.
-  - Wx: WebAssembly/WebGL edition.
+## Functional Scope
 
-Simulation invariants:
-- Locked-step deterministic tick loop.
-- Integer + fixed-point numerics in all game-state paths.
-- Stateless rendering: renderers consume snapshots; render does not affect sim.
-- All randomness routed through a central RNG API and serialized with state.
+- **Core gameplay**
+  - Resource extraction, processing, and logistics.
+  - Power, fluids, heat, and other networks.
+  - Worldgen for multiple planets and environments.
+  - Colonies composed of tiles, chunks, and regions.
+  - Research and tech progression.
 
-Data-driven design:
-- Base game and expansions are defined as data mods (Tier 0).
-- Future scripting and native mod tiers are built on top of the same kernel.
+- **Macro layer**
+  - Planet-specific content packs (Mercury, Venus, Mars, Jupiter, Saturn).
+  - Space layer content pack (`data/space`) for orbital infrastructure and inter-planetary links.
+  - Aggregate transit and trade between colonies and planets.
 
-Long-term survivability:
-- Code should remain buildable with old compilers and toolchains.
-- Simulation must not depend on modern OS features or heavy libraries.
-- Save format (`.RFS`) is versioned and migratable.
+- **Moddability**
+  - Data-driven prototype definitions in JSON-like formats.
+  - Tier 0 (data-only) mods from day one.
+  - Tier 1 (script) and Tier 2 (binary/native) mods in later phases and on capable platforms.
 
-Codex must assume:
-- The v10 spec is authoritative for design goals and constraints.
-- The repository layout and file naming described in the latest context take precedence over older naming in the spec (e.g. `source/` instead of `src/`, `config/` instead of `cfg/`, no `rf-` prefixes in file names).
+## Non-Functional Scope
+
+- **Determinism guarantee**
+  - Reproducible simulation across platforms and compilers.
+  - Lockstep multiplayer enabled by deterministic core.
+  - Cross-platform replay and state-hash comparison.
+
+- **Portability**
+  - Edition set targets:
+    - 1x: MS-DOS (via `source/platform/msdos`).
+    - 3x: Windows 3.x (`source/platform/win16`).
+    - 9x: Windows 9x family (`source/platform/win32`).
+    - Nx: Windows NT family (`source/platform/win32`).
+    - Lx: POSIX desktop (`source/platform/posix`).
+    - Wx: WebAssembly/WebGL (`source/platform/web`).
+    - Other editions (classic Mac, Android) are conceptual for now.
+
+- **Architecture discipline**
+  - Clear dependency direction:
+    - system → core/world/schedule/save → engine/mods/runtime → render/interface → platform.
+  - No reverse dependency from platform or render into core internals.
+  - Configuration, profiles, and edition differences expressed via data/config, not hard-coded in core.
+
+## Out of Scope for Now
+
+- Advanced 3D rendering or physics.
+- Complex scripting VMs and native mod systems in early phases.
+- Cross-edition cloud features or services.
+- Any feature that would compromise determinism or portable build.
+
+This scope can expand, but only if compatible with the current layering and constraints.

@@ -1,121 +1,109 @@
-WORKFLOW, CI, TESTING, AND ROADMAP
-==================================
+# Workflow, CI, Testing, and Roadmap
 
-Build and toolchains
---------------------
-- Primary dev/CI:
-  - Linux + GCC/Clang.
-  - Windows NT (Nx) + MSVC.
-- Secondary/retro targets:
-  - DOS/Win3x toolchains (Watcom etc.) introduced later.
-  - Emscripten for WebAssembly.
-  - 68k/PPC for Classic Mac.
+This document describes how to grow the codebase step by step and how CI/testing should be structured.
 
-CMake is the canonical build system:
-- Root `CMakeLists.txt` sets project and options.
-- Subdirectory CMake files build per-module libraries:
-  - core, engine, mods, runtime, utility, render, interface, platform.
-- Tools and tests are separate executables linking these libs.
+## Build Workflow
 
-Testing
--------
-tests/
-  CMakeLists.txt
-  core/           # core/world/network/research/RNG tests.
-  determinism/    # replay and state-hash tests.
-  perf/           # perf targets for small/mid/large maps.
-  render/         # render backend smoke tests.
-  macrosim/       # transit and macro AI tests.
+- Build system: CMake (or similar) with:
+  - Root `CMakeLists.txt`.
+  - Per-module CMake files under `source/`, `tools/`, and `tests/`.
+- Primary dev targets:
+  - POSIX desktop (Lx) using `source/platform/posix`.
+  - Windows (9x/Nx) using `source/platform/win32`.
+- Secondary targets:
+  - MS-DOS (`source/platform/msdos`).
+  - Win16 (`source/platform/win16`).
+  - Web (`source/platform/web`).
 
-Typical suites:
-- core:
-  - World construction, item/inventory behaviour.
-  - Network invariants, research progression.
-  - RNG reproducibility.
+`build/` is the canonical out-of-tree build directory.
 
-- determinism:
-  - `test_replay_basic`: single-seed input streams, local hash checks.
-  - `test_replay_cross`: cross-compiler/platform replay comparisons.
-  - `test_save_load`: ensure save+load round trips preserve state.
+## CI Expectations
 
-- perf:
-  - `perf_small_factory`: baseline UPS tests for low tiers.
-  - `perf_mid_factory`: mid-tier capacity checks.
-  - `perf_large_factory`: stress tests for Tier2_high.
+- All tests under `tests/` must pass on primary dev targets.
+- Determinism tests must run on:
+  - At least one POSIX target.
+  - At least one Windows target.
+- Build must be warning-free (or minimal and tracked) in kernel modules.
 
-- render:
-  - SW/GL1/GL2 backend initialisation and basic draw checks.
+## Test Layout (Conceptual)
 
-- macrosim:
-  - Transit manifest flows.
-  - Macro AI behaviours at aggregate level.
+`tests/` will eventually contain:
 
-CI requirements:
-- All tests must pass on supported compilers.
-- Determinism tests are non-optional.
-- Breaking determinism is treated as a bug, not a feature.
+- `tests/core/` – tests for core and world:
+  - World construction and mutation.
+  - Item/energy/logistics/research behaviour.
+- `tests/determinism/` – save/load, replay, and state-hash tests.
+- `tests/perf/` – performance/UPS tests at different map scales.
+- `tests/render/` – backend smoke tests (initialise, draw, teardown).
+- `tests/macrosim/` – transit and macro AI tests.
 
-Packaging and distributions
----------------------------
-Packaging:
-- Scripts under `tools/` and/or `dist/` produce:
-  - Retro images (floppy/ISO).
-  - Modern installers/archives (Nx/Lx/Mx).
-  - Web/Android bundles (Wx/Ax).
-- Builds must be reproducible from a clean checkout + documented toolchains.
+Each test target is a separate executable linked against core libraries.
 
-Install layout (typical):
-- `RETROFACTORY/bin/`       # Binaries.
-- `RETROFACTORY/data/`      # Base game content.
-- `RETROFACTORY/mods/`      # Official + user mods.
-- `RETROFACTORY/saves/`     # Save files.
-- `RETROFACTORY/config/`    # User config.
-- `RETROFACTORY/docs/`      # Text docs/readme.
+## Development Roadmap (Condensed)
 
-Roadmap (condensed)
--------------------
-Phase 0 – Skeleton & build:
-- Implement basic directory structure.
-- Stub core/engine APIs.
-- One modern desktop target (e.g. Nx on Linux/Windows).
-- Minimal headless loop and logging.
+Phase 0 – Skeleton & Build
+- Create directory structure and stub CMake files.
+- Implement minimal stubs for:
+  - `system_base`, `rng`, `core_api`, `eng_app`, `plat_api`, `posix_main`.
+- Get a no-op executable building and running (exit 0).
 
-Phase 1 – Minimal world & save:
-- Single-colony world model (tiles/chunks).
-- Items/inventories and simple machines.
-- `.RFS` v1 + state hashing.
-- Replay/determinism tests.
+Phase 1 – Headless Core and Determinism
+- Implement minimal `CoreState` in `core_api`.
+- Integrate deterministic RNG.
+- Implement `save` + `state_hash` for minimal state.
+- Add determinism tests that:
+  - Run N ticks.
+  - Save/load.
+  - Compare state and hash.
 
-Phase 2 – Logistics & power:
-- Belts/inserters and power networks (simple algorithms).
-- Performance tests for low tiers.
+Phase 2 – World Grid and Simple Content
+- Implement `world_space` and `world_grid` with a simple test world.
+- Integrate world structures into `CoreState`.
+- Extend save/hash to include world.
+- Add tests under `tests/core/` for world construction and mutation.
 
-Phase 3 – Fluids, heat, and research:
-- Fluid/heat networks (simple first, profile-driven).
-- Labs and tech tree progression.
-- Expanded profile/edition mapping.
+Phase 3 – Items, Networks, Logistics, Research
+- Implement:
+  - `item`, `energy`, `logistic`, `networks`, `research`.
+- Wire these into tick phases in `schedule`.
+- Add tests for each subsystem and update determinism tests.
 
-Phase 4 – Mods and UI:
-- Tier-0 mod loader complete.
-- Launcher, HUD, and debug UI.
+Phase 4 – Data Packs and Mod Loader (Tier 0)
+- Implement:
+  - `source/mods/data` loader, manifest, dependency graph, registry.
+- Load `data/base` and one planet pack (e.g. `mars`) at startup.
+- Add tests for:
+  - Manifest parsing.
+  - Mod ordering.
+  - Prototype assembly.
 
-Phase 5 – Multi-edition front-ends:
-- Implement Win9x, Linux, macOS, Web, Android front-ends.
-- Profile and edition tuning.
+Phase 5 – UI, Render, and Platform Integration
+- Implement:
+  - Basic `ui_system`, `ui_game`, `ui_debug`, `launch_main`.
+  - `rnd_sw` renderer and selection via `rnd_pick`.
+  - Platform-specific windowing/input on POSIX/Win32.
+- Build a simple playable loop for Lx/Nx with:
+  - Window.
+  - Basic camera.
+  - Simple HUD.
 
-Phase 6 – Space and macro:
-- Implement rf_space (space layer, transit graphs).
-- Integrate planet packs (earth/mars).
-- Macro AI and policy hooks.
+Phase 6 – Space Pack, Macro Layer, and Extended Platforms
+- Integrate `data/space` content and transit/macro systems.
+- Add more platforms (msdos, win16, web) as front-ends.
+- Extend perf tests and determinism suites to cover macro cases.
 
-Guidance for Codex
-------------------
-- Respect current roadmap phase when generating code:
-  - Start with simple algorithms and structures aligned with Phase 0–2.
-  - Avoid prematurely implementing advanced features (Tier1 scripts, Tier2 native mods) until needed.
-- When adding tests:
-  - Place them in the appropriate directory under `tests/`.
-  - Use existing patterns for test naming and structure.
-- When extending modules:
-  - Choose the file based on feature area, not personal preference.
-  - Keep changes local to the smallest necessary set of modules.
+## Guidance for Stepwise Development
+
+When using code generation tools:
+
+- Work phase-by-phase.
+- For each phase:
+  - Define a narrow goal (e.g. “headless core with deterministic tick”).
+  - Limit changes to a small set of modules.
+  - Require tests and build integration.
+- After each phase:
+  - Build.
+  - Run tests.
+  - Fix issues before expanding scope.
+
+This controlled growth is mandatory to prevent architectural drift and keep the project maintainable and deterministic.

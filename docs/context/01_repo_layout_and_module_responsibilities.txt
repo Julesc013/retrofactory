@@ -1,562 +1,263 @@
-REPOSITORY LAYOUT AND MODULE RESPONSIBILITIES
-=============================================
 
-Top-level
----------
-retrofactory/
-  CMakeLists.txt    # Root build script.
-  VERSION           # Semantic version for kernel/save/mod APIs.
-  README.md         # Overview and quickstart.
-  LICENSE           # License text.
 
-  docs/
-  config/
-  data/
-  external/
-  source/
-  tools/
-  tests/
-  build/
-  dist/
+---
 
-Docs
-----
-docs/
-  spec_master_v10.md    # Canonical spec document.
-  arch_overview.md      # Short architecture summary.
-  arch_core.md          # Core, engine, and layering details.
-  arch_world.md         # World/planet/colony/grid/transit model.
-  arch_networks.md      # Power/fluid/heat/logistics networks.
-  determinism.md        # Numeric model and determinism rules.
-  save_format.md        # .RFS format and migration rules.
-  mod_api.md            # Mod API reference.
-  edition_matrix.md     # Edition/profile matrix.
-  perf_targets.md       # UPS/entity/map targets per profile.
-  build_guide.md        # Toolchains and build instructions.
-  coding_rules.md       # Language subset and style rules.
-  test_plan.md          # Test suites and coverage plan.
-  roadmap.md            # Implementation phases.
+### `docs/context/01_repo_layout_and_module_responsibilities.md`
 
-Runtime configuration
----------------------
-config/
-  core_default.cfg   # Default core/gameplay settings.
-  video_default.cfg  # Default renderer/resolution settings.
-  audio_default.cfg  # Default audio settings.
-  input_default.cfg  # Default keybindings and input mapping.
+```markdown
+# Repo Layout and Module Responsibilities
 
-  edition_1x.cfg     # MS-DOS edition defaults and caps.
-  edition_3x.cfg     # Win3.x edition.
-  edition_9x.cfg     # Win9x edition.
-  edition_nx.cfg     # Windows NT family.
-  edition_lx.cfg     # Linux.
-  edition_mx.cfg     # macOS.
-  edition_cx.cfg     # Classic Mac.
-  edition_ax.cfg     # Android.
-  edition_wx.cfg     # WebAssembly/WebGL.
+This document focuses on `source/` and how modules relate to each other. Use it to decide where to implement new functionality.
 
-  mods_default.cfg   # Default official mods enabled at first run.
-  render_matrix.cfg  # Which render backends are allowed per edition/platform.
+## `source/` Overview
 
-Data and content
-----------------
-data/
-  base/              # Base game content (core game, Tier 0 data pack).
-    manifest.json
-    prototypes/
-      item.json
-      networks.json
-      fluid.json
-      power.json
-      heat.json
-      recipes.json
-      techtree.json
-      worldgen.json
-      profiles.json
-      logistic.json
-      research.json
-    locale/
-      en/
-        strings.cfg
-    graphics/
-      sprites/
-      tiles/
-      ui/
-    audio/
-      sounds/
-      music/
-    scripts/         # Reserved for future base scripts (empty for v1).
+```text
+source
+├── config
+├── core
+├── engine
+├── interface
+├── mods
+│   ├── binary
+│   ├── data
+│   └── script
+├── platform
+│   ├── msdos
+│   ├── posix
+│   ├── web
+│   ├── win16
+│   └── win32
+├── render
+├── runtime
+├── save
+├── schedule
+├── system
+├── utility
+└── world
 
-  mods/              # Official and user mods.
-    rf_space/
-      manifest.json
-      prototypes/
-        space_layers.json
-        planet_archetypes.json
-        space_entities.json
-        transit_rules.json
-      graphics/
-      audio/
-      locale/
-    rf_earth/
-      manifest.json
-      prototypes/
-        surfaces.json
-        scenarios.json
-      locale/
-    rf_mars/
-      manifest.json
-      prototypes/
-        surfaces.json
-        scenarios.json
-      locale/
 
-Third-party libraries (optional vendoring)
-------------------------------------------
-external/
-  sdl2/
-  lua/
-  pcg_random/
-  zlib/
-
-Core code tree
---------------
-source/
-  CMakeLists.txt   # Adds module subdirectories as libraries.
-
-  system/
-  core/
-  world/
-  schedule/
-  save/
-  config/
-  engine/
-  mods/
-  runtime/
-  utility/
-  render/
-  interface/
-  platform/
-
-System primitives
------------------
 source/system/
-  system_base.h   # Fundamental typedefs, ID types, and units.
-  rng.h
-  rng.cpp
 
-- system_base.h:
-  - Fixed-width integers.
-  - ID types for entities/chunks/colonies/planets.
-  - Unit constants and small helpers.
+Lowest-level primitives shared across kernel modules.
 
-- rng.*:
-  - Deterministic RNG implementation (e.g. PCG32).
-  - All simulation randomness routes through here.
+Typical files:
 
-Core simulation systems
------------------------
+system_base.h – fixed-width integer types, ID typedefs, unit constants.
+
+rng.h / rng.cpp – deterministic RNG implementation and serialisation.
+
+No dependencies on higher-level modules.
+
+Must be buildable on all target compilers.
+
 source/core/
-  CMakeLists.txt
-  core_api.h
-  core_api.cpp
-  item.h
-  item.cpp
-  energy.h
-  energy.cpp
-  logistic.h
-  logistic.cpp
-  networks.h
-  networks.cpp
-  research.h
-  research.cpp
+
+Core simulation systems (the “kernel” gameplay logic).
 
 Responsibilities:
-- core_api.*:
-  - Public API for engine → core.
-  - Core init/tick/shutdown, snapshot hooks.
 
-- item.*:
-  - Item prototypes, inventories, stack operations.
+Items and inventories.
 
-- energy.*:
-  - Combined power/fluid/heat handling for v1.
-  - Per-entity energy state; integrates with networks.
+Energy systems (power, fluids, heat).
 
-- logistic.*:
-  - Belts, inserters, and logistic movement rules.
+Logistics (belts, inserters, basic logistics networks).
 
-- networks.*:
-  - Network registry and dispatcher.
-  - Creation/merge/split logic for all network types.
+Generic network registry and dispatch.
 
-- research.*:
-  - Tech tree, labs, science accumulation and unlocks.
+Research and tech state.
 
-World topology and grid
------------------------
+Public core API (core_api.h/cpp) for engine access.
+
+Depends on:
+
+system/, utility/, and config/ (profiles/version).
+
+Must not depend on:
+
+render/, interface/, platform/, or OS headers.
+
 source/world/
-  world_space.h
-  world_space.cpp
-  world_grid.h
-  world_grid.cpp
-  transit.h
-  transit.cpp
 
-Responsibilities:
-- world_space.*:
-  - World, planet, surface, colony structures and relationships.
-  - Planetary heatmaps for worldgen (elevation, temp, moisture, etc).
+Spatial and macro topology:
 
-- world_grid.*:
-  - Regions, chunks, tiles.
-  - Coordinate systems and indexing.
+Tiles, chunks, regions.
 
-- transit.*:
-  - Transit graphs and manifests between colonies/planets/surfaces.
+Colonies, surfaces, planets.
 
-Tick scheduling and events
---------------------------
+Transit layer abstraction:
+
+Routes and manifests between colonies and planets.
+
+Integrates with core systems only through well-defined interfaces.
+
 source/schedule/
-  events.h
-  events.cpp
-  tick.h
-  tick.cpp
 
-Responsibilities:
-- events.*:
-  - Internal event types and queues for cross-system signalling.
+Tick and event management.
 
-- tick.*:
-  - Canonical tick phase ordering.
-  - Orchestration of core/world/network updates.
+Defines:
 
-Save/load and determinism hashing
----------------------------------
+Canonical tick phases and ordering.
+
+Event queues and cross-system signalling.
+
+Orchestrates calls into core/ and world/.
+
 source/save/
-  save.h
-  save.cpp
-  state_hash.h
-  state_hash.cpp
+
+Save/load and deterministic state hashing.
 
 Responsibilities:
-- save.*:
-  - `.RFS` file format handling.
-  - Serialisation/deserialisation of simulation state.
-  - Version-aware load/migration.
 
-- state_hash.*:
-  - Hashing of full simulation state.
-  - Used for replay verification and determinism CI.
+.RFS “Retrofactory Save” format implementation.
 
-Profile and versioning
-----------------------
+Versioned serialisation/deserialisation.
+
+State hashing for replay and cross-platform determinism checks.
+
+Must not perform IO directly tied to platform; uses runtime/platform abstractions.
+
 source/config/
-  profile.h
-  profile.cpp
-  version.h
 
-- profile.*:
-  - Core-side representation of data-driven profiles.
-  - Maps profile IDs to caps and algorithm tiers.
+Core-side configuration structures.
 
-- version.h:
-  - Version constants for engine, save format, and mod API.
+Responsibilities:
 
-Engine host layer
------------------
+Profiles (caps and algorithm tier selection).
+
+Version constants for engine, save format, mod API.
+
+Reads data from data/base/prototypes and config/ via runtime/engine.
+
 source/engine/
-  CMakeLists.txt
-  eng_app.h
-  eng_app.cpp
-  eng_config.h
-  eng_config.cpp
-  eng_replay.h
-  eng_replay.cpp
-  eng_simulation.h
-  eng_simulation.cpp
-  eng_mod_state.h
-  eng_mod_state.cpp
 
-Responsibilities:
-- eng_app.*:
-  - High-level application driver (init, main loop, shutdown).
+Host layer around core:
 
-- eng_config.*:
-  - Merge `config/*.cfg` and data profiles.
-  - Build engine/core configuration structures.
+Application lifecycle.
 
-- eng_replay.*:
-  - Record/replay harness using `state_hash` and `core_api`.
+Configuration merge (config + data profiles).
 
-- eng_simulation.*:
-  - Drives `core_tick`.
-  - Extracts renderable snapshots for render module.
+Simulation loop.
 
-- eng_mod_state.*:
-  - Tracks loaded mods, versions, and capabilities.
+Replay harness.
 
-Mod infrastructure
-------------------
+Core snapshot extraction for rendering.
+
+Mod state tracking.
+
+Depends on:
+
+system/, core/, world/, schedule/, save/, config/, mods/, runtime/.
+
+Exposes entrypoints used by interface and platform.
+
 source/mods/
-  CMakeLists.txt
-  mod_api.h
-  mod_manifest.h
-  mod_manifest.cpp
-  mod_loader.h
-  mod_loader.cpp
-  mod_depgraph.h
-  mod_depgraph.cpp
-  mod_registry.h
-  mod_registry.cpp
 
-  script/
-    scr_vm.h
-    scr_vm.cpp
-    scr_bind_core.h
-    scr_bind_core.cpp
+Subdirectories:
 
-  native/
-    nat_api.h
-    nat_loader.h
-    nat_loader.cpp
+data/ – logic for Tier 0 data mod loading (manifests, dependency graph, registries).
 
-Responsibilities:
-- mod_api.h:
-  - C-level API surface for mods (Tier 1+).
+script/ – placeholder for deterministic scripting VM and bindings.
 
-- mod_manifest.*:
-  - Parse and validate mod manifest.json files.
+binary/ – placeholder for native/binary mod ABI and loader.
 
-- mod_loader.*:
-  - Discover and load mods.
-  - Inject Tier-0 data into core.
+Module responsibilities:
 
-- mod_depgraph.*:
-  - Dependency graph and load ordering.
+mod_api – C-level API surface exposed to mods.
 
-- mod_registry.*:
-  - Registry of loaded mods and their metadata.
+mod_manifest – parse and validate mod metadata.
 
-- script/*:
-  - Reserved for deterministic scripting VM and core bindings.
+mod_loader – discover, load, and apply mods.
 
-- native/*:
-  - Reserved for native plugin ABI and loader (Tier 2).
+mod_depgraph – dependency resolution and conflict detection.
 
-Runtime services
-----------------
+mod_registry – tracking loaded mods and capabilities.
+
 source/runtime/
-  CMakeLists.txt
-  rt_config_paths.h
-  rt_config_paths.cpp
-  rt_log.h
-  rt_log.cpp
-  rt_profile.h
-  rt_profile.cpp
-  rt_error.h
-  rt_error.cpp
-  rt_save_mgr.h
-  rt_save_mgr.cpp
 
-Responsibilities:
-- rt_config_paths.*:
-  - Parse `config/*.cfg`.
-  - Merge defaults and edition file.
-  - Compute platform-aware config/mod/save directories.
+Platform-agnostic runtime helpers:
 
-- rt_log.*:
-  - Logging system with categories and backends.
-  - Hooks into platform logging.
+Config parsing and path resolution.
 
-- rt_profile.*:
-  - Lightweight profiling counters for perf tests and UI overlays.
+Logging.
 
-- rt_error.*:
-  - Error codes and user-facing error messages.
+Profiling.
 
-- rt_save_mgr.*:
-  - Save slot management and autosave control.
-  - Uses `save.*` and paths from `rt_config_paths`.
+Error reporting and crash messages.
 
-Utility helpers
----------------
+Save slot management.
+
+May call into platform abstractions via plat_* APIs but not directly into OS APIs.
+
 source/utility/
-  CMakeLists.txt
-  containers.h
-  string.h
-  string.cpp
-  path.h
-  path.cpp
-  hash.h
-  hash.cpp
-  fixed.h
-  geom.h
-  geom.cpp
 
-Responsibilities:
-- containers.h:
-  - Simple array/vector/span/bitset types, C++98-safe.
+Basic containers, string, path, hashing, fixed math, geometry.
 
-- string.*:
-  - Small string wrappers and utilities.
+Designed to be C++98-compatible and light-weight.
 
-- path.*:
-  - Path join/normalize helpers.
+Used by core and other kernel modules to avoid heavy STL.
 
-- hash.*:
-  - Generic hashing routines for internal data structures.
-
-- fixed.h:
-  - Fixed-point math helpers for determinism.
-
-- geom.*:
-  - 2D vector/rectangle helpers (used by UI/render and optionally world).
-
-Rendering backends
-------------------
 source/render/
-  CMakeLists.txt
-  rnd_api.h
-  rnd_api.cpp
-  rnd_pick.h
-  rnd_pick.cpp
-  rnd_sw.h
-  rnd_sw.cpp
-  rnd_gl1.h
-  rnd_gl1.cpp
-  rnd_dx5.h
-  rnd_dx5.cpp
-  rnd_gl2.h
-  rnd_gl2.cpp
 
-Responsibilities:
-- rnd_api.*:
-  - Public render entrypoints for engine/interface.
+Rendering backends and renderer selection:
 
-- rnd_pick.*:
-  - Select appropriate backend (sw/gl1/dx5/gl2) based on config and platform capabilities.
+rnd_api – engine-facing render entrypoints.
 
-- rnd_sw.*:
-  - Software renderer for low-end/retro builds and fallback.
+rnd_pick – backend selection based on config and capabilities.
 
-- rnd_gl1.*:
-  - OpenGL 1.x fixed-function renderer.
+rnd_sw – software renderer for retro and fallback.
 
-- rnd_dx5.*:
-  - DirectX 5 renderer for Win9x.
+rnd_gl1, rnd_dx5, rnd_gl2 – GPU backends for appropriate editions.
 
-- rnd_gl2.*:
-  - OpenGL 2 renderer for modern desktops.
+Consumes simulation snapshots provided by engine.
 
-User interface and networking
------------------------------
+Must not modify core state.
+
 source/interface/
-  CMakeLists.txt
-  ui_system.h
-  ui_system.cpp
-  ui_game.h
-  ui_game.cpp
-  ui_debug.h
-  ui_debug.cpp
 
-  launch_main.h
-  launch_main.cpp
-  launch_mod.h
-  launch_mod.cpp
-  launch_render.h
-  launch_render.cpp
-
-  net_lockstep.h
-  net_lockstep.cpp
-  net_server.h
-  net_server.cpp
-  net_client.h
-  net_client.cpp
+UI toolkit, HUD, launcher, and network protocol.
 
 Responsibilities:
-- ui_system.*:
-  - Base UI toolkit and themes.
 
-- ui_game.*:
-  - In-game HUD and controls.
+Base UI system and skins.
 
-- ui_debug.*:
-  - Debug/perf/network overlays.
+In-game HUD and debug overlays.
 
-- launch_main.*:
-  - Launcher flow and main menu.
+Launcher flow plus mod/renderer selection.
 
-- launch_mod.*:
-  - Mod selection and load order UI.
+Lockstep network protocol (client/server).
 
-- launch_render.*:
-  - Renderer selection UI and fallback logic.
+Uses:
 
-- net_lockstep.*:
-  - Lockstep protocol logic.
+Engine for simulation control.
 
-- net_server.* / net_client.*:
-  - Networking implementations for server and client.
+Render module for drawing.
 
-Platform layer
---------------
+Platform abstraction for input/windowing.
+
 source/platform/
-  CMakeLists.txt
-  plat_api.h
-  plat_ids.h
 
-  msdos/
-    dos32_main.cpp
-    dos32_platform.cpp
+Per-OS/platform implementation and entrypoints.
 
-  win16/
-    win16_main.cpp
-    win16_platform.cpp
+Subdirectories:
 
-  win32/
-    win32_main.cpp
-    win32_platform.cpp
+msdos – DOS 32-bit entrypoint and platform implementation.
 
-  posix/
-    posix_main.cpp
-    posix_platform.cpp
-    posix_net.cpp
+win16 – Win16 entrypoint and platform implementation.
 
-  webasm/
-    web_main.cpp
-    web_platform.cpp
+win32 – Win32 entrypoint and platform implementation, shared by 9x/Nx.
 
-Responsibilities:
-- plat_api.h:
-  - Abstract interface for window, input, audio, filesystem, time.
+posix – POSIX entrypoint and platform implementation.
 
-- plat_ids.h:
-  - Enums/IDs for platforms and editions.
+web – WebAssembly/Web platform implementation.
 
-Per-platform directories implement `plat_api` and provide entrypoints (`*_main.cpp`).
+Shared files:
 
-Tools and tests
----------------
-tools/
-  asset_packer/
-  sprite_build/
-  save_view/
-  world_inspect/
-  mod_sdk/
+plat_api.h – abstract platform API surface (window, input, audio, FS, time).
 
-tests/
-  CMakeLists.txt
-  core/
-  determinism/
-  perf/
-  render/
-  macrosim/
+plat_ids.h – platform and edition IDs.
 
-- Tools:
-  - Asset packer, sprite builder, save viewer, world inspector, mod SDK.
-  - Can use modern C++ and STL; not subject to core determinism constraints.
+tests/ and tools/
 
-- Tests:
-  - Dedicated test binaries per module and feature group.
-  - Used heavily in CI for determinism and perf.
+tests/ – test batteries for core, determinism, perf, render, macrosim.
+
+tools/ – stand-alone tools that may link against core/libs but are not part of the runtime.
