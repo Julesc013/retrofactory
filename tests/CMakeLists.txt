@@ -10,3 +10,21 @@ target_include_directories(retrofactory_placeholder_test
 )
 
 add_test(NAME placeholder_run COMMAND retrofactory_placeholder_test)
+
+add_executable(test_save_load
+    determinism/test_save_load.cpp
+)
+
+target_include_directories(test_save_load
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/source
+)
+
+target_link_libraries(test_save_load
+    PRIVATE
+        core
+        save
+        system
+)
+
+add_test(NAME determinism_save_load COMMAND test_save_load)
