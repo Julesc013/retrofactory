@@ -1,0 +1,129 @@
+CODING RULES, REQUIREMENTS, AND PROHIBITIONS
+===========================================
+
+Language level
+--------------
+Core/kernel modules (system, core, world, schedule, save, config, engine, mods, runtime, utility):
+- Use C++98 subset.
+- Prefer a C-like style with simple classes/structs as needed.
+
+Allowed:
+- POD structs and light classes.
+- Namespaces.
+- Plain enums (not enum class).
+- Simple templates (especially in `utility/containers.h`).
+- RAII in non-critical paths if it does not introduce exceptions.
+
+Forbidden:
+- Exceptions (`throw`, `try`, `catch`) in all kernel code.
+- RTTI (`dynamic_cast`, `typeid`) in kernel code.
+- Non-deterministic operations in simulation paths.
+- Heavy STL in hot paths (especially `std::map`, `std::unordered_*`, `std::list`).
+- Platform-specific headers in core/world/schedule/save.
+
+Platform and tools code (platform, tools, tests):
+- Can use more modern C++ and selected STL types if it does not leak into kernel interfaces.
+- Should still avoid exceptions in code that interacts with core APIs.
+
+Determinism constraints
+-----------------------
+- No floating-point arithmetic in any function that mutates game state or influences simulation decisions.
+- All random behaviours go through `rng.*` and are serialised via save state.
+- Tick order and system update order must be stable and data-driven (defined by `schedule/tick.*`).
+
+Dependency rules
+----------------
+Core/kernel modules MAY depend on:
+- `system/` (system_base, rng).
+- `utility/` (containers, string/path, hash, fixed, geom).
+- `config/profile.h` and `config/version.h`.
+- Other kernel modules as per the defined layering.
+
+Kernel modules MUST NOT depend on:
+- `source/render/`.
+- `source/interface/`.
+- `source/platform/`.
+- Any OS or graphics headers.
+- Any tool or test code.
+
+Render layer:
+- Uses snapshots from engine; must not modify core state.
+- Can use floating point and GPU APIs.
+
+Interface layer:
+- Talks to engine and render, consumes platform input.
+- No direct dependency on core internals outside of `core_api` and engine APIs.
+
+Platform layer:
+- Implements `plat_api.h` for each platform.
+- Provides main/entrypoint functions.
+- Never directly manipulates core/world state.
+
+File and module growth policy
+-----------------------------
+The current directory/file structure is the baseline. Codex must respect these rules:
+
+1. Do NOT:
+   - Add new top-level modules under `source/` without explicit design justification.
+   - Split existing modules into many tiny files unless the single file has become clearly unwieldy (e.g. thousands of lines and logically separable subsystems).
+   - Recreate separate `hash` modules (we already have `utility/hash.*` and `save/state_hash.*`).
+
+2. Prefer:
+   - Adding related functions to existing modules when extending functionality:
+     - New energy-related behaviour → `core/energy.*`.
+     - New logistics algorithm → `core/logistic.*`.
+     - New profile property → `config/profile.*`.
+     - New render backend selection logic → `render/rnd_pick.*`.
+   - Keeping simulation logic cohesive within a few large files per subsystem, rather than over-fragmented.
+
+3. Planned split points (only when really needed):
+   - `core/energy.cpp` → may later split into `energy_power.cpp`, `energy_fluid.cpp`, `energy_heat.cpp` when complexity grows.
+   - `world_space.cpp` → may split into `world_planet.cpp`, `world_colony.cpp`, etc.
+   - `world_grid.cpp` → may split into `grid_tiles.cpp` and `grid_index.cpp`.
+   - `ui_system.cpp` → may split into `ui_widgets.cpp`, `ui_layout.cpp`, `ui_skin.cpp`.
+   - `*_platform.cpp` → may split into video/input/audio/fs/time per platform.
+
+General style
+-------------
+- Use explicit include guards in all headers.
+- Keep includes minimal and prefer forward declarations where possible.
+- No global mutable state outside of clearly defined singletons or context structs; prefer explicit state objects passed around.
+- Use struct-based configuration objects rather than ad-hoc globals.
+- Avoid macros for logic; restrict them to include guards and small compile-time switches where necessary.
+
+Function design
+---------------
+- Prefer fewer, well-parameterised functions in one module over scattering small functions across multiple modules.
+- Do not aggressively micro-split functions unless:
+  - It significantly improves clarity.
+  - Or you need to isolate a clearly distinct algorithm.
+
+- For simulation functions:
+  - Keep signatures explicit about which state they read/write.
+  - Avoid hidden side effects across unrelated subsystems.
+
+Testing and CI expectations
+---------------------------
+- Any change to:
+  - Simulation logic (core/world/schedule/save).
+  - Numeric types or units.
+  - Profiles or edition behaviour.
+  - Save format or state hashing.
+must be accompanied by appropriate tests under `tests/`:
+  - Determinism/replay tests where applicable.
+  - Perf tests if it affects performance.
+
+Forbidden shortcuts
+-------------------
+Codex must NOT:
+- Introduce any simulation changes that depend on wall-clock time, threads, or OS-level randomness.
+- Embed platform-specific code in core/world/schedule/save.
+- Hard-code edition or platform-specific logic in core (e.g. `if (edition == 1x)` in simulation code).
+- Bypass the mod loader to inject content from code; all content belongs in `data/`.
+
+If in doubt:
+- Place new simulation logic in core/world/schedule/save.
+- Place new config/path/save-slot logic in runtime.
+- Place new rendering logic in render.
+- Place new UI or network protocol logic in interface.
+- Place OS-specific code in the appropriate `platform` subdirectory.

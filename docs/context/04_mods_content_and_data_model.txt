@@ -1,0 +1,99 @@
+MODS, CONTENT MODEL, AND DATA FLOW
+==================================
+
+Content layering
+----------------
+- Base game data pack under `data/base/`:
+  - Equivalent to rf-core in spec.
+  - Contains all base prototypes for items, entities, machines, recipes, tech, worldgen profiles.
+- Official mods under `data/mods/`:
+  - rf_space: space expansion (space layer, orbital logistics, planet archetypes).
+  - rf_earth, rf_mars: planet packs using rf_space APIs.
+- User mods also live under `data/mods/`.
+
+Tiered mod model
+----------------
+Tier 0: Data mods (v1):
+- Contain:
+  - JSON prototypes.
+  - Resources (graphics, audio).
+  - Localisation.
+- No executable code.
+- Deterministic by construction.
+- Supported everywhere.
+
+Tier 1: Script mods (future):
+- Executed in a deterministic VM (e.g. Lua-like), implemented under `source/mods/script/`.
+- Strict sandbox:
+  - No IO, no wall clock, no threads.
+  - Instruction budgets per tick.
+- Allowed only on more capable editions (Nx/Lx/Mx/Ax/Wx full) and when enabled.
+- Not permitted in deterministic MP or retro editions in v1.
+
+Tier 2: Native mods (future):
+- Compiled C ABI plugins loaded via `source/mods/native/`.
+- Potentially non-deterministic, platform-specific.
+- Disabled by default and forbidden in:
+  - Retro editions (1x/3x/9x/Cx).
+  - Web edition (Wx).
+  - Any lockstep multiplayer session.
+
+Mod manifests
+-------------
+Each mod has a `manifest.json` describing:
+- id, name, version, author.
+- dependencies (on other mods, on rf-kernel version, on capabilities such as space layer).
+- conflicts.
+- supported editions and profiles.
+- optional metadata (description, website, etc.).
+
+Loader behaviour
+----------------
+- `mod_loader.*` scans:
+  - Official mod directory (`data/mods/`).
+  - User mod directory (configurable path from `rt_config_paths`).
+- `mod_manifest.*` parses each manifest, building an in-memory IR.
+- `mod_depgraph.*`:
+  - Resolves dependencies and conflicts.
+  - Produces a deterministic load order.
+- `mod_registry.*`:
+  - Stores loaded mod descriptors (enabled/disabled, version, capabilities).
+- For Tier 0:
+  - Data is applied to prototype tables in core:
+    - Items, fluids, machines, recipes, tech, worldgen profiles, etc.
+- For Tier 1 & 2 (future):
+  - Script/native modules are initialised and bound via `mod_api` and `scr_bind_core`/`nat_api`.
+
+Content flow
+------------
+1. Engine boot:
+   - `eng_config` loads config files (edition_*.cfg, mods_default.cfg).
+   - `rt_config_paths` resolves paths to data and mod directories.
+2. Mod discovery:
+   - `mod_loader` finds base and mods, processes manifests, uses `mod_depgraph`.
+3. Prototype assembly:
+   - Base and mods prototypes loaded.
+   - Conflicts resolved according to mod order and rules.
+4. Core init:
+   - `core_api` initialises simulation using final prototype tables.
+   - Profiles and edition caps are applied through `profile` data.
+
+Content location rules for Codex
+--------------------------------
+- Any new prototype type (e.g. new network type, new machine category) must:
+  - Define its data schema in `data/base/prototypes/*.json`.
+  - Be supported by core systems under `source/core/` or `source/world/`.
+- Mod-specific behaviour:
+  - For v1, must be expressed via data only (Tier 0).
+  - No mod-specific logic in core; core works from generic data structures.
+
+Do NOT:
+- Embed mod-specific conditionals in core or engine (e.g. `if (mod == rf_space)`).
+- Hardwire mod IDs in simulation logic.
+- Place data prototypes in code; they must live in `data/`.
+
+Do:
+- Route all content differences through:
+  - Prototypes (JSON).
+  - Profiles.
+  - Mod manifests and APIs.

@@ -1,0 +1,51 @@
+PROJECT: Retrofactory
+
+Short description
+-----------------
+Retrofactory is a deterministic, Factorio-like factory and colony simulation game designed to run on a very wide range of hardware, from MS-DOS and early Windows to modern desktop, mobile, and WebAssembly platforms.
+
+A single canonical simulation engine drives all full editions. Front-ends vary by platform, but the rules, numerics, and core behaviour are shared.
+
+Key concepts
+------------
+Kernel vs content:
+- "Kernel" = engine + simulation code under `source/`:
+  - Core simulation logic.
+  - World topology and networks.
+  - Save/load and determinism.
+  - Mod loader and runtime services.
+- "Core game" (rf-core in the spec) = base data pack under `data/base`:
+  - Items, entities, recipes, tech tree, worldgen templates.
+- "Space expansion" (rf-space in the spec) = official mod under `data/mods/rf_space`.
+
+One game, many front-ends:
+- Retro editions:
+  - 1x: MS-DOS 3–8.
+  - 3x: Windows 3.0–3.11.
+  - 9x: Windows 95/98/Me.
+  - Cx: Classic Mac (System 7–9).
+- Modern editions:
+  - Nx: Windows NT family (2000/XP/7/10/12).
+  - Lx: Linux.
+  - Mx: macOS.
+  - Ax: Android.
+  - Wx: WebAssembly/WebGL edition.
+
+Simulation invariants:
+- Locked-step deterministic tick loop.
+- Integer + fixed-point numerics in all game-state paths.
+- Stateless rendering: renderers consume snapshots; render does not affect sim.
+- All randomness routed through a central RNG API and serialized with state.
+
+Data-driven design:
+- Base game and expansions are defined as data mods (Tier 0).
+- Future scripting and native mod tiers are built on top of the same kernel.
+
+Long-term survivability:
+- Code should remain buildable with old compilers and toolchains.
+- Simulation must not depend on modern OS features or heavy libraries.
+- Save format (`.RFS`) is versioned and migratable.
+
+Codex must assume:
+- The v10 spec is authoritative for design goals and constraints.
+- The repository layout and file naming described in the latest context take precedence over older naming in the spec (e.g. `source/` instead of `src/`, `config/` instead of `cfg/`, no `rf-` prefixes in file names).

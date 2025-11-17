@@ -1,0 +1,121 @@
+WORKFLOW, CI, TESTING, AND ROADMAP
+==================================
+
+Build and toolchains
+--------------------
+- Primary dev/CI:
+  - Linux + GCC/Clang.
+  - Windows NT (Nx) + MSVC.
+- Secondary/retro targets:
+  - DOS/Win3x toolchains (Watcom etc.) introduced later.
+  - Emscripten for WebAssembly.
+  - 68k/PPC for Classic Mac.
+
+CMake is the canonical build system:
+- Root `CMakeLists.txt` sets project and options.
+- Subdirectory CMake files build per-module libraries:
+  - core, engine, mods, runtime, utility, render, interface, platform.
+- Tools and tests are separate executables linking these libs.
+
+Testing
+-------
+tests/
+  CMakeLists.txt
+  core/           # core/world/network/research/RNG tests.
+  determinism/    # replay and state-hash tests.
+  perf/           # perf targets for small/mid/large maps.
+  render/         # render backend smoke tests.
+  macrosim/       # transit and macro AI tests.
+
+Typical suites:
+- core:
+  - World construction, item/inventory behaviour.
+  - Network invariants, research progression.
+  - RNG reproducibility.
+
+- determinism:
+  - `test_replay_basic`: single-seed input streams, local hash checks.
+  - `test_replay_cross`: cross-compiler/platform replay comparisons.
+  - `test_save_load`: ensure save+load round trips preserve state.
+
+- perf:
+  - `perf_small_factory`: baseline UPS tests for low tiers.
+  - `perf_mid_factory`: mid-tier capacity checks.
+  - `perf_large_factory`: stress tests for Tier2_high.
+
+- render:
+  - SW/GL1/GL2 backend initialisation and basic draw checks.
+
+- macrosim:
+  - Transit manifest flows.
+  - Macro AI behaviours at aggregate level.
+
+CI requirements:
+- All tests must pass on supported compilers.
+- Determinism tests are non-optional.
+- Breaking determinism is treated as a bug, not a feature.
+
+Packaging and distributions
+---------------------------
+Packaging:
+- Scripts under `tools/` and/or `dist/` produce:
+  - Retro images (floppy/ISO).
+  - Modern installers/archives (Nx/Lx/Mx).
+  - Web/Android bundles (Wx/Ax).
+- Builds must be reproducible from a clean checkout + documented toolchains.
+
+Install layout (typical):
+- `RETROFACTORY/bin/`       # Binaries.
+- `RETROFACTORY/data/`      # Base game content.
+- `RETROFACTORY/mods/`      # Official + user mods.
+- `RETROFACTORY/saves/`     # Save files.
+- `RETROFACTORY/config/`    # User config.
+- `RETROFACTORY/docs/`      # Text docs/readme.
+
+Roadmap (condensed)
+-------------------
+Phase 0 – Skeleton & build:
+- Implement basic directory structure.
+- Stub core/engine APIs.
+- One modern desktop target (e.g. Nx on Linux/Windows).
+- Minimal headless loop and logging.
+
+Phase 1 – Minimal world & save:
+- Single-colony world model (tiles/chunks).
+- Items/inventories and simple machines.
+- `.RFS` v1 + state hashing.
+- Replay/determinism tests.
+
+Phase 2 – Logistics & power:
+- Belts/inserters and power networks (simple algorithms).
+- Performance tests for low tiers.
+
+Phase 3 – Fluids, heat, and research:
+- Fluid/heat networks (simple first, profile-driven).
+- Labs and tech tree progression.
+- Expanded profile/edition mapping.
+
+Phase 4 – Mods and UI:
+- Tier-0 mod loader complete.
+- Launcher, HUD, and debug UI.
+
+Phase 5 – Multi-edition front-ends:
+- Implement Win9x, Linux, macOS, Web, Android front-ends.
+- Profile and edition tuning.
+
+Phase 6 – Space and macro:
+- Implement rf_space (space layer, transit graphs).
+- Integrate planet packs (earth/mars).
+- Macro AI and policy hooks.
+
+Guidance for Codex
+------------------
+- Respect current roadmap phase when generating code:
+  - Start with simple algorithms and structures aligned with Phase 0–2.
+  - Avoid prematurely implementing advanced features (Tier1 scripts, Tier2 native mods) until needed.
+- When adding tests:
+  - Place them in the appropriate directory under `tests/`.
+  - Use existing patterns for test naming and structure.
+- When extending modules:
+  - Choose the file based on feature area, not personal preference.
+  - Keep changes local to the smallest necessary set of modules.

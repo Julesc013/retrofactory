@@ -1,0 +1,52 @@
+PROJECT: Retrofactory
+
+Short description:
+Retrofactory is a Factorio-like factory simulation game with a highly portable, deterministic core. It targets retro and modern platforms (MS-DOS, Windows 3.x/9x/NT, POSIX, WebAssembly) via clean separation between core simulation, platform glue, rendering backends, and UI.
+
+High-level architecture:
+- Deterministic core simulation (C++98 subset, largely C-style).
+- World/topology layer (planets/surfaces/colonies/tiles/transit).
+- Scheduler/tick system.
+- Save/load + deterministic hashing for replay.
+- Engine layer orchestrating core, mods, runtime, render, platform.
+- Mod loader and dependency graph.
+- Runtime services (config, paths, logging, profiling, error handling, save manager).
+- Utility helpers (containers, strings, paths, hashing, fixed-point, geometry).
+- Render backends (software, GL1, DX5, GL2).
+- Interface layer (UI, launcher, networking).
+- Platform-specific front-ends (DOS, Win16, Win32, POSIX, WebAssembly).
+- Tools + tests.
+
+Primary goals:
+1. Determinism:
+   - All gameplay simulation must be deterministic across platforms when given the same input stream and config.
+   - Use fixed-point and integer math in the core; avoid floats in hot simulation paths.
+
+2. Portability:
+   - Core and most of the engine must compile with old C/C++ compilers (e.g. MSVC 6, Watcom, etc.).
+   - Isolate OS, windowing, and API-specific details into `source/platform/` and render backends.
+
+3. Extensibility:
+   - Every major subsystem lives in its own module (core, world, energy, logistics, research, mods, render, platform, UI).
+   - Mods can add content and later script/native extensions without embedding platform logic into core.
+   - It must be possible to replace or disable a subsystem (e.g. swap render backend, add/remove mod, change platform) with minimal coupling.
+
+4. Replaceability:
+   - Core simulation should not depend on rendering, UI, platform specifics, or tool code.
+   - Render backends should depend only on snapshots from the engine, not on core internals.
+   - Platform implementations should only implement `plat_api.h` and call engine/interface entrypoints.
+
+5. Retro-friendliness:
+   - Keep memory use and CPU demand reasonable for old hardware.
+   - Avoid heavy STL usage and modern language features in the portable parts.
+
+Main languages:
+- Core/engine: C++98 subset (no exceptions, no RTTI), but written in a C-like style where helpful.
+- Platform code may use more host-specific features if needed, but keep headers clean for old compilers.
+- Tools and tests can be more relaxed (newer C++ if we want), but should not affect core or platform build requirements.
+
+Key invariants for Codex to respect:
+- DO NOT introduce exceptions or RTTI into `source/core/`, `source/world/`, `source/schedule/`, `source/save/`, `source/system/`.
+- DO NOT introduce platform-specific includes or APIs into core/world/schedule/save.
+- DO keep public APIs stable and focused: `core_api.h`, `mod_api.h`, `plat_api.h`, `rnd_api.h` are the main external faces.
+- Maintain determinism in any code that affects simulation state or save/load.

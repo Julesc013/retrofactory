@@ -1,0 +1,327 @@
+retrofactory/
+  CMakeLists.txt
+  VERSION
+  README.md
+  LICENSE
+
+  docs/
+    spec_master_v10.md
+    arch_overview.md
+    arch_core.md
+    arch_world.md
+    arch_networks.md
+    determinism.md
+    save_format.md
+    mod_api.md
+    edition_matrix.md
+    perf_targets.md
+    build_guide.md
+    coding_rules.md
+    test_plan.md
+    roadmap.md
+
+  config/
+    core_default.cfg
+    video_default.cfg
+    audio_default.cfg
+    input_default.cfg
+    edition_1x.cfg
+    edition_3x.cfg
+    edition_9x.cfg
+    edition_nx.cfg
+    edition_lx.cfg
+    edition_mx.cfg
+    edition_cx.cfg
+    edition_ax.cfg
+    edition_wx.cfg
+    mods_default.cfg
+    render_matrix.cfg
+
+  data/
+    base/
+      manifest.json
+      prototypes/
+        item.json
+        networks.json
+        fluid.json
+        power.json
+        heat.json
+        recipes.json
+        techtree.json
+        worldgen.json
+        profiles.json
+        logistic.json
+        research.json
+      locale/
+        en/
+          strings.cfg
+      graphics/
+        sprites/
+        tiles/
+        ui/
+      audio/
+        sounds/
+        music/
+      scripts/
+    mods/
+      rf_space/
+        manifest.json
+        prototypes/
+          space_layers.json
+          planet_archetypes.json
+          space_entities.json
+          transit_rules.json
+        graphics/
+        audio/
+        locale/
+      rf_earth/
+        manifest.json
+        prototypes/
+          surfaces.json
+          scenarios.json
+        locale/
+      rf_mars/
+        manifest.json
+        prototypes/
+          surfaces.json
+          scenarios.json
+        locale/
+
+  external/
+    sdl2/
+    lua/
+    pcg_random/
+    zlib/
+
+  source/
+    CMakeLists.txt
+
+    system/
+      system_base.h        # types + ids + units
+      rng.h
+      rng.cpp
+
+    core/
+      CMakeLists.txt
+      core_api.h
+      core_api.cpp
+      item.h
+      item.cpp
+      energy.h
+      energy.cpp
+      logistic.h
+      logistic.cpp
+      networks.h
+      networks.cpp
+      research.h
+      research.cpp
+
+    world/
+      world_space.h
+      world_space.cpp
+      world_grid.h
+      world_grid.cpp
+      transit.h
+      transit.cpp
+
+    schedule/
+      events.h
+      events.cpp
+      tick.h
+      tick.cpp
+
+    save/
+      save.h
+      save.cpp
+      state_hash.h
+      state_hash.cpp
+
+    config/
+      profile.h
+      profile.cpp
+      version.h
+
+    engine/
+      CMakeLists.txt
+      eng_app.h
+      eng_app.cpp
+      eng_config.h
+      eng_config.cpp
+      eng_replay.h
+      eng_replay.cpp
+      eng_simulation.h
+      eng_simulation.cpp
+      eng_mod_state.h
+      eng_mod_state.cpp
+
+    mods/
+      CMakeLists.txt
+      mod_api.h
+      mod_manifest.h
+      mod_manifest.cpp
+      mod_loader.h
+      mod_loader.cpp
+      mod_depgraph.h
+      mod_depgraph.cpp
+      mod_registry.h
+      mod_registry.cpp
+
+      script/
+        scr_vm.h
+        scr_vm.cpp
+        scr_bind_core.h
+        scr_bind_core.cpp
+
+      native/
+        nat_api.h
+        nat_loader.h
+        nat_loader.cpp
+
+    runtime/
+      CMakeLists.txt
+      rt_config_paths.h
+      rt_config_paths.cpp
+      rt_log.h
+      rt_log.cpp
+      rt_profile.h
+      rt_profile.cpp
+      rt_error.h
+      rt_error.cpp
+      rt_save_mgr.h
+      rt_save_mgr.cpp
+
+    utility/
+      CMakeLists.txt
+      containers.h
+      string.h
+      string.cpp
+      path.h
+      path.cpp
+      hash.h
+      hash.cpp
+      fixed.h
+      geom.h
+      geom.cpp
+
+    render/
+      CMakeLists.txt
+      rnd_api.h
+      rnd_api.cpp
+      rnd_pick.h
+      rnd_pick.cpp
+      rnd_sw.h
+      rnd_sw.cpp
+      rnd_gl1.h
+      rnd_gl1.cpp
+      rnd_dx5.h
+      rnd_dx5.cpp
+      rnd_gl2.h
+      rnd_gl2.cpp
+
+    interface/
+      CMakeLists.txt
+      ui_system.h
+      ui_system.cpp
+      ui_game.h
+      ui_game.cpp
+      ui_debug.h
+      ui_debug.cpp
+
+      launch_main.h
+      launch_main.cpp
+      launch_mod.h
+      launch_mod.cpp
+      launch_render.h
+      launch_render.cpp
+
+      net_lockstep.h
+      net_lockstep.cpp
+      net_server.h
+      net_server.cpp
+      net_client.h
+      net_client.cpp
+
+    platform/
+      CMakeLists.txt
+      plat_api.h
+      plat_ids.h
+
+      msdos/
+        dos32_main.cpp
+        dos32_platform.cpp
+
+      win16/
+        win16_main.cpp
+        win16_platform.cpp
+
+      win32/
+        win32_main.cpp
+        win32_platform.cpp
+
+      posix/
+        posix_main.cpp
+        posix_platform.cpp
+        posix_net.cpp
+
+      webasm/
+        web_main.cpp
+        web_platform.cpp
+
+  tools/
+    asset_packer/
+      CMakeLists.txt
+      main.cpp
+      asset_packer.cpp
+      asset_packer.h
+    sprite_build/
+      CMakeLists.txt
+      main.cpp
+      sprite_build.cpp
+      sprite_build.h
+    save_view/
+      CMakeLists.txt
+      main.cpp
+      save_view.cpp
+      save_view.h
+    world_inspect/
+      CMakeLists.txt
+      main.cpp
+      world_inspect.cpp
+      world_inspect.h
+    mod_sdk/
+      CMakeLists.txt
+      main.cpp
+      mod_validate.cpp
+      mod_validate.h
+      mod_scaffold.cpp
+      mod_scaffold.h
+
+  tests/
+    CMakeLists.txt
+    core/
+      test_world.cpp
+      test_entity.cpp
+      test_networks.cpp
+      test_research.cpp
+      test_rng.cpp
+    determinism/
+      test_replay_basic.cpp
+      test_replay_cross.cpp
+      test_save_load.cpp
+    perf/
+      perf_small_factory.cpp
+      perf_mid_factory.cpp
+      perf_large_factory.cpp
+    render/
+      test_render_sw.cpp
+      test_render_gl1.cpp
+      test_render_gl2.cpp
+    macrosim/
+      test_transit.cpp
+      test_macro_ai.cpp
+
+  build/
+    .gitignore
+
+  dist/
+    .gitignore
