@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>D:\Inbox\GitHub Repos\retrofactory\build_win\x64\Debug\ZERO_CHECK</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>D:\Inbox\GitHub Repos\retrofactory\build_win\tests\Debug\retrofactory_placeholder_test.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>D:\Inbox\GitHub Repos\retrofactory\build_win\source\platform\posix\Debug\retrofactory_posix_stub.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>D:\Inbox\GitHub Repos\retrofactory\build_win\tests\Debug\test_save_load.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>D:\Inbox\GitHub Repos\retrofactory\build_win\tests\Debug\test_world.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>D:\Inbox\GitHub Repos\retrofactory\build_win\x64\Debug\ALL_BUILD</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles />
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

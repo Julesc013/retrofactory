@@ -4,7 +4,11 @@
 #include <cstddef>
 #include <cstring>
 #include <new>
+#if defined(_WIN32)
+#include <windows.h>
+#else
 #include <time.h>
+#endif
 
 struct PlatWindow
 {
@@ -117,8 +121,12 @@ void plat_window_request_close(PlatWindow *window)
 
 void plat_sleep_ms(uint32 milliseconds)
 {
+#if defined(_WIN32)
+    Sleep(static_cast<DWORD>(milliseconds));
+#else
     struct timespec ts;
     ts.tv_sec = milliseconds / 1000u;
     ts.tv_nsec = (milliseconds % 1000u) * 1000000L;
     nanosleep(&ts, 0);
+#endif
 }

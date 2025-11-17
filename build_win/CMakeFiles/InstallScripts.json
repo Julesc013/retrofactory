@@ -1,0 +1,20 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/system/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/utility/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/world/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/runtime/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/core/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/render/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/interface/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/save/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/engine/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/platform/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/source/platform/posix/cmake_install.cmake",
+		"D:/Inbox/GitHub Repos/retrofactory/build_win/tests/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

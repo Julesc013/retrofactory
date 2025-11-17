@@ -1,0 +1,10 @@
+^D:\INBOX\GITHUB REPOS\RETROFACTORY\BUILD_WIN\CMAKEFILES\031F001C7C3BFBFAB20D8EFFAE57F821\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Inbox/GitHub Repos/retrofactory" "-BD:/Inbox/GitHub Repos/retrofactory/build_win" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "D:/Inbox/GitHub Repos/retrofactory/build_win/retrofactory.sln"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

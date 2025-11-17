@@ -1,0 +1,16 @@
+D:/Inbox/GitHub Repos/retrofactory/build_win/CMakeFiles/ALL_BUILD.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/CMakeFiles/ZERO_CHECK.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/system/CMakeFiles/system.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/utility/CMakeFiles/utility.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/world/CMakeFiles/world.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/runtime/CMakeFiles/runtime.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/core/CMakeFiles/core.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/render/CMakeFiles/render.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/interface/CMakeFiles/interface.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/save/CMakeFiles/save.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/engine/CMakeFiles/engine.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/platform/posix/CMakeFiles/platform_posix.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/source/platform/posix/CMakeFiles/retrofactory_posix_stub.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/tests/CMakeFiles/retrofactory_placeholder_test.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/tests/CMakeFiles/test_save_load.dir
+D:/Inbox/GitHub Repos/retrofactory/build_win/tests/CMakeFiles/test_world.dir
