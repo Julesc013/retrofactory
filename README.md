@@ -1,12 +1,9 @@
 # Retrofactory Project Specification Master
 
-**Author:** Jules Carboni  
-
-**Project:** Retrofactory 
-
-**Version:** v10, 2025-11-17  
-
-**Status:** Maybe out of date 
+- **Author:** Jules Carboni  
+- **Project:** Retrofactory 
+- **Version:** v10, 2025-11-17  
+- **Status:** Maybe out of date 
 
 ---
 
