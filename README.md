@@ -21,7 +21,7 @@ Key goals:
 
 - **One game**, many front-ends:
   - Retro: MS-DOS, Windows 3.x, Windows 9x, classic Mac
-  - Modern: Windows NT family, Linux, macOS, Android, Web (WASM)
+  - Modern: Windows NT family, Linux, Mac OS X, Android, Web (WASM)
 - **Lockstep deterministic simulation**:
   - All full editions share the same rules and produce identical results under identical inputs (subject to caps).
 - **Data-driven content**:
