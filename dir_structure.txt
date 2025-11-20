@@ -25,7 +25,6 @@ retrofactory
 │   │   │   ├── recipes.json
 │   │   │   ├── research.json
 │   │   │   ├── worldgen.json
-│   │   │   └── profiles.json
 │   │   ├── locale
 │   │   │   └── en
 │   │   │       └── strings.cfg
@@ -97,7 +96,6 @@ retrofactory
 │   │   │   ├── recipes.json
 │   │   │   ├── research.json
 │   │   │   ├── worldgen.json
-│   │   │   └── profiles.json
 │   │   ├── locale
 │   │   │   └── en
 │   │   ├── graphics
@@ -131,8 +129,6 @@ retrofactory
 │   └── zlib
 ├── source
 │   ├── config
-│   │   ├── profile.h
-│   │   ├── profile.cpp
 │   │   └── version.h
 │   ├── core
 │   │   ├── core.h
@@ -188,8 +184,8 @@ retrofactory
 │   │   │   ├── sdl2_ui.cpp
 │   │   │   ├── gdi_ui.h
 │   │   │   ├── gdi_ui.cpp
-│   │   │   ├── macclassic_ui.h
-│   │   │   └── macclassic_ui.cpp
+│   │   │   ├── macosc_ui.h
+│   │   │   └── macosc_ui.cpp
 │   │   └── entry
 │   │       ├── launcher_1x.cpp
 │   │       ├── launcher_3x.cpp
@@ -208,15 +204,11 @@ retrofactory
 │   │   ├── depgraph.cpp
 │   │   ├── registry.h
 │   │   ├── registry.cpp
-│   │   ├── script
-│   │   │   ├── scr_vm.h
-│   │   │   ├── scr_vm.cpp
-│   │   │   ├── scr_bind.h
-│   │   │   └── scr_bind.cpp
-│   │   └── native
-│   │       ├── nat_api.h
-│   │       ├── nat_loader.h
-│   │       └── nat_loader.cpp
+│   │   └── script
+│   │       ├── scr_vm.h
+│   │       ├── scr_vm.cpp
+│   │       ├── scr_bind.h
+│   │       └── scr_bind.cpp
 │   ├── platform
 │   │   ├── dos16
 │   │   │   ├── dos16_main.cpp
