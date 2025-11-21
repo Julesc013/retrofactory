@@ -1,4 +1,5 @@
 #include "world/world.h"
+#include "world/worldgen.h"
 
 namespace
 {
@@ -34,10 +35,18 @@ bool world_resize(World &world, const WorldDimensions &dimensions)
         world.tiles = 0;
         world.tile_count = 0u;
     }
+    if (world.chunks != 0)
+    {
+        delete[] world.chunks;
+        world.chunks = 0;
+        world.chunk_count = 0u;
+    }
 
     world.dimensions = dimensions;
     world.tile_count = static_cast<u32>(total_tiles);
+    world.chunk_count = dimensions.chunk_count_x * dimensions.chunk_count_y;
     world.tiles = new Tile[world.tile_count];
+    world.chunks = new Chunk[world.chunk_count];
 
     /* Zero-initialize terrain. */
     u32 index;
@@ -46,13 +55,35 @@ bool world_resize(World &world, const WorldDimensions &dimensions)
         world.tiles[index].terrain_type = 0u;
     }
 
+    /* Build chunk metadata and tile pointers. */
+    const u32 chunk_size_x = dimensions.chunk_size_x;
+    const u32 chunk_size_y = dimensions.chunk_size_y;
+    u32 chunk_y;
+    u32 chunk_index = 0u;
+    for (chunk_y = 0u; chunk_y < dimensions.chunk_count_y; ++chunk_y)
+    {
+        u32 chunk_x;
+        for (chunk_x = 0u; chunk_x < dimensions.chunk_count_x; ++chunk_x)
+        {
+            const u32 origin_x = chunk_x * chunk_size_x;
+            const u32 origin_y = chunk_y * chunk_size_y;
+            const u32 tile_offset = origin_y * dimensions.tile_count_x + origin_x;
+            chunk_init(world.chunks[chunk_index], origin_x, origin_y, chunk_size_x, chunk_size_y, world.tiles + tile_offset);
+            chunk_index += 1u;
+        }
+    }
+
     return true;
 }
 
-bool world_init(World &world, u64 /*seed*/)
+bool world_init(World &world, u64 seed)
 {
     const WorldDimensions dims = build_default_dimensions();
-    return world_resize(world, dims);
+    if (!world_resize(world, dims))
+    {
+        return false;
+    }
+    return worldgen_generate(world, seed);
 }
 
 void world_shutdown(World &world)
@@ -62,6 +93,12 @@ void world_shutdown(World &world)
         delete[] world.tiles;
         world.tiles = 0;
         world.tile_count = 0u;
+    }
+    if (world.chunks != 0)
+    {
+        delete[] world.chunks;
+        world.chunks = 0;
+        world.chunk_count = 0u;
     }
 
     world.dimensions.chunk_size_x = 0u;

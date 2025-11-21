@@ -2,6 +2,7 @@
 
 #include "system/types.h"
 #include "world/tile.h"
+#include "world/chunk.h"
 
 struct WorldDimensions
 {
@@ -18,8 +19,10 @@ struct World
     WorldDimensions dimensions;
     Tile *tiles;
     u32 tile_count;
+    Chunk *chunks;
+    u32 chunk_count;
 
-    World() : dimensions(), tiles(0), tile_count(0u) {}
+    World() : dimensions(), tiles(0), tile_count(0u), chunks(0), chunk_count(0u) {}
 };
 
 bool world_init(World &world, u64 seed);

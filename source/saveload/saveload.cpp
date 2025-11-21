@@ -7,6 +7,7 @@
 #include "saveload/hash.h"
 #include "config/version.h"
 #include "world/world.h"
+#include "schedule/events.h"
 
 namespace
 {
@@ -54,6 +55,20 @@ bool save_core_state(const CoreState &state, const char *path)
         ok = ok && write_all(state.world.tiles, static_cast<size_t>(state.world.tile_count * sizeof(Tile)), file);
     }
 
+    /* Core subsystems */
+    ok = ok && write_all(&state.entities.entity_count, sizeof(u32), file);
+    ok = ok && write_all(&state.networks.power_networks, sizeof(u32), file);
+    ok = ok && write_all(&state.networks.fluid_networks, sizeof(u32), file);
+    ok = ok && write_all(&state.recipes.recipe_count, sizeof(u32), file);
+    ok = ok && write_all(&state.research.current_topic, sizeof(u32), file);
+    ok = ok && write_all(&state.research.progress, sizeof(u32), file);
+    ok = ok && write_all(&state.scheduler.count, sizeof(u32), file);
+    if (ok && state.scheduler.count > 0u)
+    {
+        const size_t ev_bytes = static_cast<size_t>(state.scheduler.count * sizeof(ScheduledEvent));
+        ok = ok && write_all(state.scheduler.events, ev_bytes, file);
+    }
+
     std::fclose(file);
     return ok;
 }
@@ -99,6 +114,30 @@ bool load_core_state(CoreState &state, const char *path)
     {
         const size_t tile_bytes = static_cast<size_t>(state.world.tile_count * sizeof(Tile));
         ok = tile_bytes == 0u || read_all(state.world.tiles, tile_bytes, file);
+    }
+
+    if (ok)
+    {
+        ok = ok && read_all(&state.entities.entity_count, sizeof(u32), file);
+        ok = ok && read_all(&state.networks.power_networks, sizeof(u32), file);
+        ok = ok && read_all(&state.networks.fluid_networks, sizeof(u32), file);
+        ok = ok && read_all(&state.recipes.recipe_count, sizeof(u32), file);
+        ok = ok && read_all(&state.research.current_topic, sizeof(u32), file);
+        ok = ok && read_all(&state.research.progress, sizeof(u32), file);
+
+        ok = ok && read_all(&state.scheduler.count, sizeof(u32), file);
+        if (ok && state.scheduler.count > 0u)
+        {
+            if (state.scheduler.count > kMaxScheduledEvents)
+            {
+                ok = false;
+            }
+            else
+            {
+                const size_t ev_bytes = static_cast<size_t>(state.scheduler.count * sizeof(ScheduledEvent));
+                ok = ev_bytes == 0u || read_all(state.scheduler.events, ev_bytes, file);
+            }
+        }
     }
 
     if (ok)

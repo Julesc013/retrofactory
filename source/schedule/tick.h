@@ -1,3 +1,5 @@
 #pragma once
 
-// Placeholder for tick.h
+#include "schedule/events.h"
+
+bool schedule_tick(Scheduler &scheduler, Tick current_tick);

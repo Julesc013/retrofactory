@@ -4,5 +4,5 @@
 
 struct Tile
 {
-    uint8 terrain_type;
+    u8 terrain_type;
 };

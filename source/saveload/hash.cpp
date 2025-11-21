@@ -2,6 +2,8 @@
 
 #include <stddef.h>
 
+#include "schedule/events.h"
+
 namespace
 {
     const u64 kOffsetBasis = 1469598103934665603ULL;
@@ -48,6 +50,18 @@ u64 compute_state_hash(const CoreState &state)
     if (state.world.tiles != 0 && state.world.tile_count > 0u)
     {
         hash_bytes(hash, state.world.tiles, static_cast<size_t>(state.world.tile_count * sizeof(Tile)));
+    }
+
+    hash_u32(hash, state.entities.entity_count);
+    hash_u32(hash, state.networks.power_networks);
+    hash_u32(hash, state.networks.fluid_networks);
+    hash_u32(hash, state.recipes.recipe_count);
+    hash_u32(hash, state.research.current_topic);
+    hash_u32(hash, state.research.progress);
+    hash_u32(hash, state.scheduler.count);
+    if (state.scheduler.count > 0u)
+    {
+        hash_bytes(hash, state.scheduler.events, static_cast<size_t>(state.scheduler.count * sizeof(ScheduledEvent)));
     }
 
     return hash;
