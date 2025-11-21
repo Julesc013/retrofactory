@@ -23,7 +23,7 @@ target_include_directories(test_save_load
 target_link_libraries(test_save_load
     PRIVATE
         core
-        save
+        saveload
         system
         world
 )
@@ -42,7 +42,7 @@ target_include_directories(test_world
 target_link_libraries(test_world
     PRIVATE
         core
-        save
+        saveload
         system
         world
 )

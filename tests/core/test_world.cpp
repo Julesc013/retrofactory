@@ -1,7 +1,6 @@
-#include "core/core_api.h"
-#include "save/state_hash.h"
-#include "world/world_grid.h"
-#include "world/world_space.h"
+#include "core/core.h"
+#include "saveload/hash.h"
+#include "world/world.h"
 
 namespace
 {

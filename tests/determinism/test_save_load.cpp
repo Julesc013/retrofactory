@@ -1,9 +1,9 @@
 #include <cstdio>
 
-#include "core/core_api.h"
-#include "save/save.h"
-#include "save/state_hash.h"
-#include "world/world_grid.h"
+#include "core/core.h"
+#include "saveload/saveload.h"
+#include "saveload/hash.h"
+#include "world/world.h"
 
 namespace
 {
