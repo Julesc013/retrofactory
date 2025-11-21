@@ -2,11 +2,14 @@
 
 #include "system/types.h"
 
-// Minimal deterministic RNG helper used by the core tests.
-struct Rng
+/* Deterministic PCG-style RNG stream. */
+struct RngStream
 {
-    uint64 state;
+    u64 state;
+    u64 inc;
 };
 
-void rng_seed(Rng &rng, uint64 seed);
-uint64 rng_next(Rng &rng);
+void rng_seed(RngStream *rng, u64 seed, u64 sequence);
+u32 rng_next_u32(RngStream *rng);
+i32 rng_next_range(RngStream *rng, i32 min_inclusive, i32 max_inclusive);
+float rng_next_float01(RngStream *rng);

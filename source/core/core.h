@@ -5,15 +5,15 @@
 
 struct CoreConfig
 {
-    uint64 initial_seed;
+    u64 initial_seed;
 
     CoreConfig() : initial_seed(1u) {}
 };
 
 struct CoreState
 {
-    uint64 tick;
-    Rng rng;
+    Tick tick;
+    RngStream rng;
     World world;
 
     CoreState() : tick(0u), rng(), world() {}

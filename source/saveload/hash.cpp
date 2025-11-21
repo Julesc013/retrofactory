@@ -1,40 +1,41 @@
 #include "saveload/hash.h"
 
-#include <cstddef>
+#include <stddef.h>
 
 namespace
 {
-    const uint64 kOffsetBasis = 1469598103934665603ULL;
-    const uint64 kPrime = 1099511628211ULL;
+    const u64 kOffsetBasis = 1469598103934665603ULL;
+    const u64 kPrime = 1099511628211ULL;
 
-    void hash_bytes(uint64 &hash, const void *data, std::size_t size)
+    void hash_bytes(u64 &hash, const void *data, size_t size)
     {
         const unsigned char *bytes = static_cast<const unsigned char *>(data);
-        std::size_t index;
+        size_t index;
         for (index = 0u; index < size; ++index)
         {
-            hash ^= static_cast<uint64>(bytes[index]);
+            hash ^= static_cast<u64>(bytes[index]);
             hash *= kPrime;
         }
     }
 
-    void hash_u64(uint64 &hash, uint64 value)
+    void hash_u64(u64 &hash, u64 value)
     {
-        hash_bytes(hash, &value, sizeof(uint64));
+        hash_bytes(hash, &value, sizeof(u64));
     }
 
-    void hash_u32(uint64 &hash, uint32 value)
+    void hash_u32(u64 &hash, u32 value)
     {
-        hash_bytes(hash, &value, sizeof(uint32));
+        hash_bytes(hash, &value, sizeof(u32));
     }
 }
 
-uint64 compute_state_hash(const CoreState &state)
+u64 compute_state_hash(const CoreState &state)
 {
-    uint64 hash = kOffsetBasis;
+    u64 hash = kOffsetBasis;
 
     hash_u64(hash, state.tick);
     hash_u64(hash, state.rng.state);
+    hash_u64(hash, state.rng.inc);
 
     const WorldDimensions &dimensions = state.world.dimensions;
     hash_u32(hash, dimensions.chunk_size_x);
@@ -44,10 +45,9 @@ uint64 compute_state_hash(const CoreState &state)
     hash_u32(hash, dimensions.tile_count_x);
     hash_u32(hash, dimensions.tile_count_y);
 
-    const std::size_t tile_count = state.world.tiles.size();
-    if (tile_count > 0u)
+    if (state.world.tiles != 0 && state.world.tile_count > 0u)
     {
-        hash_bytes(hash, &state.world.tiles[0], tile_count * sizeof(Tile));
+        hash_bytes(hash, state.world.tiles, static_cast<size_t>(state.world.tile_count * sizeof(Tile)));
     }
 
     return hash;

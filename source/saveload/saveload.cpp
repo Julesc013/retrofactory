@@ -1,16 +1,17 @@
 #include "saveload/saveload.h"
 
-#include <cstddef>
+#include <stddef.h>
 #include <cstdio>
 #include <cstring>
 
 #include "saveload/hash.h"
+#include "config/version.h"
 #include "world/world.h"
 
 namespace
 {
     const char kMagic[4] = {'R', 'F', 'S', '1'};
-    const uint32 kVersion = 1u;
+    const u32 kVersion = RF_SAVE_VERSION;
 
     bool write_all(const void *data, std::size_t size, std::FILE *file)
     {
@@ -32,7 +33,7 @@ bool save_core_state(const CoreState &state, const char *path)
     }
 
     const WorldDimensions &dim = state.world.dimensions;
-    const uint32 dims[6] = {
+    const u32 dims[6] = {
         dim.chunk_size_x,
         dim.chunk_size_y,
         dim.chunk_count_x,
@@ -42,14 +43,15 @@ bool save_core_state(const CoreState &state, const char *path)
 
     bool ok = true;
     ok = ok && write_all(kMagic, sizeof(kMagic), file);
-    ok = ok && write_all(&kVersion, sizeof(uint32), file);
-    ok = ok && write_all(&state.tick, sizeof(uint64), file);
-    ok = ok && write_all(&state.rng.state, sizeof(uint64), file);
+    ok = ok && write_all(&kVersion, sizeof(u32), file);
+    ok = ok && write_all(&state.tick, sizeof(u64), file);
+    ok = ok && write_all(&state.rng.state, sizeof(u64), file);
+    ok = ok && write_all(&state.rng.inc, sizeof(u64), file);
     ok = ok && write_all(dims, sizeof(dims), file);
 
-    if (!state.world.tiles.empty())
+    if (state.world.tiles != 0 && state.world.tile_count > 0u)
     {
-        ok = ok && write_all(&state.world.tiles[0], state.world.tiles.size() * sizeof(Tile), file);
+        ok = ok && write_all(state.world.tiles, static_cast<size_t>(state.world.tile_count * sizeof(Tile)), file);
     }
 
     std::fclose(file);
@@ -65,16 +67,19 @@ bool load_core_state(CoreState &state, const char *path)
     }
 
     char magic[4] = {0, 0, 0, 0};
-    uint32 version = 0u;
-    uint32 dims[6] = {0u, 0u, 0u, 0u, 0u, 0u};
+    u32 version = 0u;
+    u32 dims[6] = {0u, 0u, 0u, 0u, 0u, 0u};
+    u64 rng_state = 0u;
+    u64 rng_inc = 0u;
     bool ok = true;
 
     ok = ok && read_all(magic, sizeof(magic), file);
     ok = ok && std::memcmp(magic, kMagic, sizeof(kMagic)) == 0;
-    ok = ok && read_all(&version, sizeof(uint32), file);
+    ok = ok && read_all(&version, sizeof(u32), file);
     ok = ok && version == kVersion;
-    ok = ok && read_all(&state.tick, sizeof(uint64), file);
-    ok = ok && read_all(&state.rng.state, sizeof(uint64), file);
+    ok = ok && read_all(&state.tick, sizeof(u64), file);
+    ok = ok && read_all(&rng_state, sizeof(u64), file);
+    ok = ok && read_all(&rng_inc, sizeof(u64), file);
     ok = ok && read_all(dims, sizeof(dims), file);
 
     WorldDimensions dimensions;
@@ -92,8 +97,14 @@ bool load_core_state(CoreState &state, const char *path)
 
     if (ok)
     {
-        const std::size_t tile_bytes = state.world.tiles.size() * sizeof(Tile);
-        ok = tile_bytes == 0u || read_all(&state.world.tiles[0], tile_bytes, file);
+        const size_t tile_bytes = static_cast<size_t>(state.world.tile_count * sizeof(Tile));
+        ok = tile_bytes == 0u || read_all(state.world.tiles, tile_bytes, file);
+    }
+
+    if (ok)
+    {
+        state.rng.state = rng_state;
+        state.rng.inc = rng_inc;
     }
 
     std::fclose(file);
