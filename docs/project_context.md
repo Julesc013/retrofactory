@@ -26,12 +26,12 @@ Status: Design reference for Codex and all tooling
 - **1x**: MS-DOS (16-bit/32-bit), text UI + CGA/EGA/VGA/VESA (software).
 - **3x**: Windows 3.x, GDI + software/VESA.
 - **9x**: Win95/98/ME, DirectX 5 + VESA.
-- **NX**: Win2000–10, DirectX 5 (where viable) and/or SDL2.
-- **LX**: Linux (32/64-bit), SDL2.
-- **MX**: macOS X (32/64-bit, PPC/Intel where feasible), SDL2.
-- **CX**: Classic Mac OS (7–9), QuickDraw.
-- **AX**: Android, platform TBD (later).
-- **WX**: WebAssembly, Web presenter.
+- **Nx**: Win2000–10, DirectX 5 (where viable) and/or SDL2.
+- **Lx**: Linux (32/64-bit), SDL2.
+- **Mx**: macOS X (32/64-bit, PPC/Intel where feasible), SDL2.
+- **Cx**: Classic Mac OS (7–9), QuickDraw.
+- **Ax**: Android, platform TBD (later).
+- **Wx**: WebAssembly, Web presenter.
 
 ### 0.3 Determinism and numerics
 
