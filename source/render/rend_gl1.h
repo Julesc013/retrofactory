@@ -1,3 +1,7 @@
 #pragma once
 
-// Placeholder for rend_gl1.h
+#include "render/rend_api.h"
+
+bool rend_gl1_init();
+bool rend_gl1_frame(RenderContext &ctx);
+void rend_gl1_shutdown();

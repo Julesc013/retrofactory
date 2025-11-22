@@ -1,1 +1,6 @@
-// Placeholder implementation for sw_vga.cpp
+#include "present/software/sw_core.h"
+
+bool sw_vga_present(RenderContext &ctx)
+{
+    return sw_core_present(ctx);
+}

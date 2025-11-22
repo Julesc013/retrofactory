@@ -123,3 +123,45 @@ target_link_libraries(core
         saveload
         schedule
 )
+
+add_library(render
+    render/rend_api.cpp
+    render/rend_pick.cpp
+    render/rend_sw.cpp
+    render/rend_dx5.cpp
+    render/rend_gl1.cpp
+    render/rend_gl2.cpp
+)
+
+target_include_directories(render
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(render
+    PUBLIC
+        system
+        engine
+)
+
+add_library(engine
+    engine/config.cpp
+    engine/engine.cpp
+    engine/replay.cpp
+    engine/simulate.cpp
+    engine/snapshot.cpp
+    engine/state.cpp
+)
+
+target_include_directories(engine
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(engine
+    PUBLIC
+        core
+        runtime
+        mods
+        render
+)

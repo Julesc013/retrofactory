@@ -1,3 +1,7 @@
 #pragma once
 
-// Placeholder for rend_dx5.h
+#include "render/rend_api.h"
+
+bool rend_dx5_init();
+bool rend_dx5_frame(RenderContext &ctx);
+void rend_dx5_shutdown();

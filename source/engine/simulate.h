@@ -1,3 +1,5 @@
 #pragma once
 
-// Placeholder for simulate.h
+#include "engine/engine.h"
+
+bool simulate_headless(EngineContext &ctx, u32 ticks);
