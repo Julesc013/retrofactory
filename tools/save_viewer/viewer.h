@@ -1,3 +1,3 @@
 #pragma once
 
-// Placeholder for viewer.h
+int save_view_main(int argc, char **argv);

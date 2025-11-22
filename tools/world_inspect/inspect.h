@@ -1,3 +1,3 @@
 #pragma once
 
-// Placeholder for inspect.h
+int world_inspect_main(int argc, char **argv);

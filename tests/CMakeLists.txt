@@ -26,6 +26,7 @@ target_link_libraries(test_save_load
         saveload
         system
         world
+        engine
 )
 
 add_test(NAME determinism_save_load COMMAND test_save_load)
@@ -48,3 +49,21 @@ target_link_libraries(test_world
 )
 
 add_test(NAME core_world COMMAND test_world)
+
+add_executable(replay_harness
+    determinism/test_save_load.cpp
+)
+
+target_include_directories(replay_harness
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/source
+)
+
+target_link_libraries(replay_harness
+    PRIVATE
+        engine
+        core
+        saveload
+        system
+        world
+)

@@ -1,3 +1,3 @@
 #pragma once
 
-// Placeholder for packer.h
+int pack_assets(int argc, char **argv);

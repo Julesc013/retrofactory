@@ -1,3 +1,3 @@
 #pragma once
 
-// Placeholder for builder.h
+int sprite_builder_main(int argc, char **argv);

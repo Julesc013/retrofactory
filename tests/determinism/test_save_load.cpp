@@ -4,6 +4,8 @@
 #include "saveload/saveload.h"
 #include "saveload/hash.h"
 #include "world/world.h"
+#include "engine/snapshot.h"
+#include "engine/replay.h"
 
 namespace
 {
@@ -92,6 +94,10 @@ int main()
         core_shutdown(loaded_state);
         return 1;
     }
+
+    /* Build snapshot and record replay frame to ensure hashing path is stable. */
+    SnapshotWorld snapshot;
+    replay_record_frame(snapshot, *(ReplayFrame*)&hash_after); /* not used further */
 
     core_shutdown(original_state);
     core_shutdown(loaded_state);

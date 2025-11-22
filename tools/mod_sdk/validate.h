@@ -1,3 +1,3 @@
 #pragma once
 
-// Placeholder for validate.h
+int mod_validate_main(int argc, char **argv);
