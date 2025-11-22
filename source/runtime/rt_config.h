@@ -5,7 +5,8 @@
 /* Fixed-size buffers to avoid heap/STL. */
 enum
 {
-    kRfMaxPath = 260
+    kRfMaxPath = 260,
+    kRfMaxName = 32
 };
 
 struct RuntimeConfig
@@ -15,6 +16,10 @@ struct RuntimeConfig
     char save_path[kRfMaxPath];
     char mods_path[kRfMaxPath];
     char logs_path[kRfMaxPath];
+    char edition[kRfMaxName];
+    char presenter[kRfMaxName];
+    char render_backend[kRfMaxName];
+    char audio_backend[kRfMaxName];
 };
 
 bool rt_config_load(RuntimeConfig *out_config, const char *path);

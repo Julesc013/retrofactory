@@ -1,0 +1,5 @@
+{
+  "entities": [
+    { "id": "mercury_probe", "speed": 1, "sprite": "mercury_probe.png" }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "networks": [
+    { "id": "thermal_grid", "capacity": 150 }
+  ]
+}

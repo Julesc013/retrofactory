@@ -1,0 +1,5 @@
+{
+  "recipes": [
+    { "id": "solar_plate", "time": 8, "input": 1, "output": 1 }
+  ]
+}

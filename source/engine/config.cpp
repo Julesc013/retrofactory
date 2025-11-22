@@ -5,6 +5,7 @@
 
 bool engine_config_init(EngineConfig &config, const char *config_path)
 {
+    prototypes_init(config.prototypes);
     if (!rt_config_load(&config.runtime, config_path))
     {
         return false;
@@ -21,7 +22,7 @@ bool engine_config_init(EngineConfig &config, const char *config_path)
     {
         return false;
     }
-    if (!mod_loader_apply(config.mods))
+    if (!mod_loader_apply(config.mods, config.prototypes))
     {
         return false;
     }

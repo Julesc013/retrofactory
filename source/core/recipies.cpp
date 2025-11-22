@@ -1,19 +1,33 @@
 #include "core/recipies.h"
 
-void recipies_init(RecipeRegistry &registry)
+void recipies_init(RecipeRegistry &registry, const PrototypeStore *prototypes)
 {
     array_init(registry.recipes);
     registry.next_id = 1u;
+    registry.prototypes = prototypes;
 
-    /* Seed with a couple of deterministic defaults. */
-    recipies_register(registry, 10u, 1u, 1u);
-    recipies_register(registry, 20u, 2u, 3u);
+    if (prototypes != 0 && prototypes->recipes.size > 0u)
+    {
+        u32 i;
+        for (i = 0u; i < prototypes->recipes.size; ++i)
+        {
+            const RecipePrototype &proto = prototypes->recipes.data[i];
+            recipies_register(registry, proto.time, proto.input_cost, proto.output_yield);
+        }
+    }
+    else
+    {
+        /* Seed with a couple of deterministic defaults. */
+        recipies_register(registry, 10u, 1u, 1u);
+        recipies_register(registry, 20u, 2u, 3u);
+    }
 }
 
 void recipies_shutdown(RecipeRegistry &registry)
 {
     array_free(registry.recipes);
     registry.next_id = 1u;
+    registry.prototypes = 0;
 }
 
 RecipeId recipies_register(RecipeRegistry &registry, u32 craft_time, u32 input_cost, u32 output_yield)

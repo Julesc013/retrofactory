@@ -3,6 +3,7 @@
 #include "system/types.h"
 #include "world/tile.h"
 #include "world/chunk.h"
+#include "mods/prototypes.h"
 
 struct WorldDimensions
 {
@@ -25,7 +26,7 @@ struct World
     World() : dimensions(), tiles(0), tile_count(0u), chunks(0), chunk_count(0u) {}
 };
 
-bool world_init(World &world, u64 seed);
+bool world_init(World &world, u64 seed, const PrototypeStore *prototypes = 0);
 bool world_resize(World &world, const WorldDimensions &dimensions);
 void world_shutdown(World &world);
 

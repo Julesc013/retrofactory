@@ -5,6 +5,10 @@
 struct SnapshotWorld
 {
     const World *world;
+    const EntitiesState *entities;
+    const NetworkState *networks;
+    const ResearchState *research;
+    const PrototypeStore *prototypes;
     Tick tick;
 };
 

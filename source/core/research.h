@@ -3,6 +3,7 @@
 #include "system/types.h"
 #include "system/ids.h"
 #include "utility/array.h"
+#include "mods/prototypes.h"
 
 struct ResearchTopic
 {
@@ -16,9 +17,10 @@ struct ResearchState
     Array<ResearchTopic> topics;
     ResearchId active;
     u32 progress;
+    const PrototypeStore *prototypes;
 };
 
-void research_init(ResearchState &state);
+void research_init(ResearchState &state, const PrototypeStore *prototypes = 0);
 void research_shutdown(ResearchState &state);
 void research_tick(ResearchState &state);
 bool research_set_active(ResearchState &state, ResearchId id);

@@ -76,14 +76,14 @@ bool world_resize(World &world, const WorldDimensions &dimensions)
     return true;
 }
 
-bool world_init(World &world, u64 seed)
+bool world_init(World &world, u64 seed, const PrototypeStore *prototypes)
 {
     const WorldDimensions dims = build_default_dimensions();
     if (!world_resize(world, dims))
     {
         return false;
     }
-    return worldgen_generate(world, seed);
+    return worldgen_generate(world, seed, prototypes);
 }
 
 void world_shutdown(World &world)

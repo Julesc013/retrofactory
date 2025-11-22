@@ -1,1 +1,4 @@
-// Placeholder implementation for posix_input.cpp
+u32 posix_input_poll()
+{
+    return 0u;
+}

@@ -88,6 +88,7 @@ add_library(mods
     mods/registry.cpp
     mods/depgraph.cpp
     mods/loader.cpp
+    mods/prototypes.cpp
     mods/script/scr_vm.cpp
     mods/script/scr_bind.cpp
 )
@@ -166,6 +167,31 @@ target_link_libraries(render
         system
         utility
         world
+)
+
+add_library(present
+    present/sdl2/pres_sdl2.cpp
+    present/dx5/pres_dx5.cpp
+    present/software/sw_core.cpp
+    present/software/sw_cga.cpp
+    present/software/sw_ega.cpp
+    present/software/sw_vga.cpp
+    present/software/sw_vesa.cpp
+    present/gdi/pres_gdi.cpp
+    present/qdraw/pres_qdraw.cpp
+    present/web/pres_web.cpp
+)
+
+target_include_directories(present
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(present
+    PUBLIC
+        render
+        system
+        utility
 )
 
 add_library(engine

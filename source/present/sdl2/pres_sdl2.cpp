@@ -7,6 +7,8 @@ namespace
     RenderBackend g_backend = RenderBackend_Software;
     RenderBackbuffer g_buffer;
     bool g_ready = false;
+    u32 g_presented = 0u;
+    u64 g_last_checksum = 0u;
 }
 
 bool pres_sdl2_init()
@@ -16,6 +18,8 @@ bool pres_sdl2_init()
     {
         g_ready = render_backbuffer_init(g_buffer, 320u, 200u);
     }
+    g_presented = 0u;
+    g_last_checksum = 0u;
     return g_ready;
 }
 
@@ -29,7 +33,13 @@ bool pres_sdl2_present(RenderContext &ctx)
     {
         ctx.target = &g_buffer;
     }
-    return rend_pick_frame(g_backend, ctx);
+    if (!rend_pick_frame(g_backend, ctx))
+    {
+        return false;
+    }
+    g_last_checksum = render_backbuffer_checksum(*ctx.target);
+    g_presented += 1u;
+    return true;
 }
 
 void pres_sdl2_shutdown()
@@ -40,4 +50,14 @@ void pres_sdl2_shutdown()
         render_backbuffer_free(g_buffer);
         g_ready = false;
     }
+}
+
+u64 pres_sdl2_last_checksum()
+{
+    return g_last_checksum;
+}
+
+u32 pres_sdl2_frame_count()
+{
+    return g_presented;
 }

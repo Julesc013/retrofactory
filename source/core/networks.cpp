@@ -1,5 +1,6 @@
 #include "core/networks.h"
 #include "utility/hash.h"
+#include <cstring>
 
 static NetworkId next_network_id(NetworkState &state)
 {
@@ -21,11 +22,29 @@ static NetworkNode make_node(NetworkId id, u32 capacity)
     return node;
 }
 
-void networks_init(NetworkState &state)
+void networks_init(NetworkState &state, const PrototypeStore *prototypes)
 {
     array_init(state.power);
     array_init(state.fluid);
     state.next_id = 1u;
+    state.prototypes = prototypes;
+
+    if (prototypes != 0)
+    {
+        u32 i;
+        for (i = 0u; i < prototypes->networks.size; ++i)
+        {
+            const NetworkPrototype &proto = prototypes->networks.data[i];
+            if (std::strstr(proto.id, "fluid") != 0)
+            {
+                networks_create_fluid(state, proto.capacity);
+            }
+            else
+            {
+                networks_create_power(state, proto.capacity);
+            }
+        }
+    }
 }
 
 void networks_shutdown(NetworkState &state)
@@ -33,6 +52,7 @@ void networks_shutdown(NetworkState &state)
     array_free(state.power);
     array_free(state.fluid);
     state.next_id = 1u;
+    state.prototypes = 0;
 }
 
 NetworkId networks_create_power(NetworkState &state, u32 capacity)

@@ -1,0 +1,5 @@
+{
+  "entities": [
+    { "id": "mars_drill", "speed": 1, "sprite": "mars_drill.png" }
+  ]
+}

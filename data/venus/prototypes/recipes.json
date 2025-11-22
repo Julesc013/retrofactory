@@ -1,0 +1,5 @@
+{
+  "recipes": [
+    { "id": "sulfur_plate", "time": 12, "input": 1, "output": 2 }
+  ]
+}

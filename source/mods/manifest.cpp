@@ -8,9 +8,9 @@
 
 namespace
 {
-    bool extract_json_string(const char *buffer, const char *key, char *out, size_t out_size)
+    bool extract_json_string_range(const char *start, const char *end, const char *key, char *out, size_t out_size)
     {
-        const char *found = std::strstr(buffer, key);
+        const char *found = std::strstr(start, key);
         if (found == 0)
         {
             return false;
@@ -25,17 +25,92 @@ namespace
         {
             ++found;
         }
-        const char *end = found;
-        while (*end != '\0' && *end != '\"' && *end != ',' && *end != '\n' && *end != '\r')
+        const char *cursor = found;
+        while (cursor < end && *cursor != '\"' && *cursor != ',' && *cursor != '\n' && *cursor != '\r' && *cursor != ']')
         {
-            ++end;
+            ++cursor;
         }
-        const size_t len = static_cast<size_t>(end - found);
+        const size_t len = static_cast<size_t>(cursor - found);
         const size_t copy_len = len < out_size - 1 ? len : out_size - 1;
         std::memset(out, 0, out_size);
         std::memcpy(out, found, copy_len);
         out[copy_len] = '\0';
         return copy_len > 0;
+    }
+
+    bool extract_json_string(const char *buffer, const char *key, char *out, size_t out_size)
+    {
+        return extract_json_string_range(buffer, buffer + std::strlen(buffer), key, out, out_size);
+    }
+
+    u32 extract_json_u32(const char *buffer, const char *key, u32 fallback)
+    {
+        const char *found = std::strstr(buffer, key);
+        if (found == 0)
+        {
+            return fallback;
+        }
+        found = std::strchr(found, ':');
+        if (found == 0)
+        {
+            return fallback;
+        }
+        found += 1;
+        while (*found == ' ' || *found == '\t' || *found == '\"')
+        {
+            ++found;
+        }
+        u32 value = fallback;
+        std::sscanf(found, "%u", &value);
+        return value;
+    }
+
+    u32 parse_string_list(const char *buffer, const char *key, char out[][kModNameMax], u32 max_out)
+    {
+        const char *found = std::strstr(buffer, key);
+        if (found == 0)
+        {
+            return 0u;
+        }
+        const char *list_start = std::strchr(found, '[');
+        const char *list_end = std::strchr(found, ']');
+        if (list_start == 0 || list_end == 0 || list_end <= list_start)
+        {
+            return 0u;
+        }
+
+        u32 count = 0u;
+        const char *cursor = list_start + 1;
+        while (cursor < list_end && count < max_out)
+        {
+            while (cursor < list_end && (*cursor == ' ' || *cursor == '\t' || *cursor == ',' || *cursor == '\n' || *cursor == '\r'))
+            {
+                ++cursor;
+            }
+            if (cursor >= list_end)
+            {
+                break;
+            }
+            if (*cursor != '\"')
+            {
+                /* Skip invalid token. */
+                ++cursor;
+                continue;
+            }
+            ++cursor;
+            const char *token_end = cursor;
+            while (token_end < list_end && *token_end != '\"')
+            {
+                ++token_end;
+            }
+            const size_t len = static_cast<size_t>(token_end - cursor);
+            const size_t copy_len = len < (kModNameMax - 1) ? len : (kModNameMax - 1);
+            std::memcpy(out[count], cursor, copy_len);
+            out[count][copy_len] = '\0';
+            count += 1u;
+            cursor = token_end + 1;
+        }
+        return count;
     }
 }
 
@@ -80,6 +155,7 @@ bool mod_manifest_load(const char *path, ModManifest &out_manifest)
     {
         std::strncpy(out_manifest.version, "0.0.0", kModVersionMax - 1);
     }
+    out_manifest.priority = extract_json_u32(buffer, "\"priority\"", 100u);
 
     /* Derive fallback name from path. */
     if (out_manifest.name[0] == '\0')
@@ -92,8 +168,10 @@ bool mod_manifest_load(const char *path, ModManifest &out_manifest)
     }
 
     std::strncpy(out_manifest.path, path, kModPathMax - 1);
-    out_manifest.priority = 0u;
     out_manifest.is_pack = std::strstr(path, "packs") != 0;
+
+    out_manifest.dependency_count = parse_string_list(buffer, "\"dependencies\"", out_manifest.dependencies, kModMaxDeps);
+    out_manifest.conflict_count = parse_string_list(buffer, "\"conflicts\"", out_manifest.conflicts, kModMaxDeps);
 
     delete[] buffer;
     string_buffer_free(&manifest_path);
@@ -102,5 +180,24 @@ bool mod_manifest_load(const char *path, ModManifest &out_manifest)
 
 bool mod_manifest_validate(const ModManifest &manifest)
 {
-    return manifest.name[0] != 0;
+    if (manifest.name[0] == '\0')
+    {
+        return false;
+    }
+    u32 i;
+    for (i = 0u; i < manifest.dependency_count; ++i)
+    {
+        if (std::strncmp(manifest.dependencies[i], manifest.name, kModNameMax) == 0)
+        {
+            return false;
+        }
+    }
+    for (i = 0u; i < manifest.conflict_count; ++i)
+    {
+        if (std::strncmp(manifest.conflicts[i], manifest.name, kModNameMax) == 0)
+        {
+            return false;
+        }
+    }
+    return true;
 }

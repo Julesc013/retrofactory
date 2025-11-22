@@ -1,0 +1,5 @@
+{
+  "recipes": [
+    { "id": "red_alloy", "time": 14, "input": 2, "output": 1 }
+  ]
+}

@@ -1,5 +1,7 @@
 {
   "name": "sfx_pcm4_4m",
   "version": "1.0.0",
-  "description": "4-bit PCM sound effects pack"
+  "description": "4-bit PCM sound effects pack",
+  "priority": 85,
+  "dependencies": []
 }

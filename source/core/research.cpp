@@ -9,14 +9,28 @@ static void add_topic(ResearchState &state, u32 cost)
     array_push(state.topics, topic);
 }
 
-void research_init(ResearchState &state)
+void research_init(ResearchState &state, const PrototypeStore *prototypes)
 {
     array_init(state.topics);
     array_reserve(state.topics, 8u);
-    add_topic(state, 50u);
-    add_topic(state, 100u);
-    add_topic(state, 200u);
-    state.active = 1u;
+    state.prototypes = prototypes;
+
+    if (prototypes != 0 && prototypes->research.size > 0u)
+    {
+        u32 i;
+        for (i = 0u; i < prototypes->research.size; ++i)
+        {
+            add_topic(state, prototypes->research.data[i].cost);
+        }
+    }
+    else
+    {
+        add_topic(state, 50u);
+        add_topic(state, 100u);
+        add_topic(state, 200u);
+    }
+
+    state.active = state.topics.size > 0u ? state.topics.data[0].id : 0u;
     state.progress = 0u;
 }
 
@@ -25,6 +39,7 @@ void research_shutdown(ResearchState &state)
     array_free(state.topics);
     state.active = 0u;
     state.progress = 0u;
+    state.prototypes = 0;
 }
 
 bool research_set_active(ResearchState &state, ResearchId id)

@@ -6,26 +6,53 @@
 
 namespace
 {
-    u8 classify(u32 mix)
+    u8 pick_terrain_from_prototypes(const PrototypeStore *prototypes, u32 noise)
     {
-        const u32 band = mix % 100u;
-        if (band < 10u)
+        if (prototypes == 0 || prototypes->worldgen.size == 0u)
         {
-            return 3u; /* water */
+            /* Default bands. */
+            const u32 band = noise % 100u;
+            if (band < 10u)
+            {
+                return 3u; /* water */
+            }
+            if (band < 40u)
+            {
+                return 1u; /* foliage */
+            }
+            if (band < 70u)
+            {
+                return 2u; /* ore */
+            }
+            return 0u; /* plains */
         }
-        if (band < 40u)
+
+        u32 total_weight = 0u;
+        u32 i;
+        for (i = 0u; i < prototypes->worldgen.size; ++i)
         {
-            return 1u; /* foliage */
+            total_weight += prototypes->worldgen.data[i].weight;
         }
-        if (band < 70u)
+        if (total_weight == 0u)
         {
-            return 2u; /* ore */
+            total_weight = prototypes->worldgen.size;
         }
-        return 0u; /* plains */
+
+        const u32 pick = noise % total_weight;
+        u32 accum = 0u;
+        for (i = 0u; i < prototypes->worldgen.size; ++i)
+        {
+            accum += prototypes->worldgen.data[i].weight;
+            if (pick < accum)
+            {
+                return prototypes->worldgen.data[i].terrain & 0x0Fu;
+            }
+        }
+        return static_cast<u8>(noise & 0x03u);
     }
 }
 
-bool worldgen_generate(World &world, u64 seed)
+bool worldgen_generate(World &world, u64 seed, const PrototypeStore *prototypes)
 {
     if (world.tiles == 0 || world.tile_count == 0u)
     {
@@ -49,7 +76,7 @@ bool worldgen_generate(World &world, u64 seed)
             {
                 const u32 coord_hash = hash_combine32(static_cast<u32>(seed), hash_combine32(x, y * 1664525u));
                 const u32 noise = rng_next_u32(&rng) ^ coord_hash;
-                tile->terrain_type = classify(noise);
+                tile->terrain_type = pick_terrain_from_prototypes(prototypes, noise);
             }
         }
     }

@@ -1,0 +1,5 @@
+{
+  "entities": [
+    { "id": "venus_harvester", "speed": 2, "sprite": "venus_harvester.png" }
+  ]
+}

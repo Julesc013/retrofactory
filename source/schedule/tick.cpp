@@ -1,13 +1,14 @@
 #include "schedule/tick.h"
 
-bool schedule_tick(Scheduler &scheduler, Tick current_tick)
+bool schedule_tick(Scheduler &scheduler, Tick current_tick, ScheduleHandler handler, void *user_data)
 {
-    /* Process and drop due events for now. */
     ScheduledEvent ev;
     while (scheduler_pop_due(scheduler, current_tick, ev))
     {
-        /* No-op placeholder; hook for future systems. */
-        (void)ev;
+        if (handler)
+        {
+            handler(ev, user_data);
+        }
     }
     return true;
 }

@@ -17,14 +17,18 @@ int mod_validate_main(int argc, char **argv)
     }
 
     ModRegistry registry;
+    PrototypeStore prototypes;
+    prototypes_init(prototypes);
     if (!mod_loader_scan(registry, config))
     {
         std::printf("Scan failed for mods\n");
+        prototypes_free(prototypes);
         return 1;
     }
-    if (!mod_loader_resolve(registry) || !mod_loader_apply(registry))
+    if (!mod_loader_resolve(registry) || !mod_loader_apply(registry, prototypes))
     {
         std::printf("Resolve/apply failed\n");
+        prototypes_free(prototypes);
         return 1;
     }
 
@@ -42,6 +46,7 @@ int mod_validate_main(int argc, char **argv)
                     rec.summary.research,
                     rec.summary.worldgen);
     }
+    prototypes_free(prototypes);
     return 0;
 }
 

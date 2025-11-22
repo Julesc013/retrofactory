@@ -1,0 +1,6 @@
+{
+  "worldgen": [
+    { "biome": "lava_fields", "weight": 2, "terrain": 0 },
+    { "biome": "metallic_plain", "weight": 2, "terrain": 2 }
+  ]
+}

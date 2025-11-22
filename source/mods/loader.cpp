@@ -5,9 +5,11 @@
 
 #include "mods/manifest.h"
 #include "mods/depgraph.h"
+#include "mods/prototypes.h"
 #include "utility/path.h"
 #include "utility/string.h"
 #include "utility/hash.h"
+#include "runtime/rt_log.h"
 
 namespace
 {
@@ -58,70 +60,299 @@ namespace
         return count;
     }
 
-    u32 count_token_occurrences(const char *path, const char *token)
+    char *load_file_text(const char *path, size_t max_size, size_t &out_size)
     {
+        out_size = 0u;
         std::FILE *file = std::fopen(path, "rb");
         if (file == 0)
         {
-            return 0u;
+            return 0;
         }
+
         std::fseek(file, 0, SEEK_END);
         const long size = std::ftell(file);
         std::fseek(file, 0, SEEK_SET);
-        if (size <= 0 || size > 32 * 1024)
+        if (size <= 0 || static_cast<size_t>(size) > max_size)
         {
             std::fclose(file);
-            return 0u;
+            return 0;
         }
 
         char *buffer = new char[static_cast<size_t>(size) + 1u];
-        const size_t read = std::fread(buffer, 1u, static_cast<size_t>(size), file);
-        buffer[read] = '\0';
+        out_size = std::fread(buffer, 1u, static_cast<size_t>(size), file);
+        buffer[out_size] = '\0';
         std::fclose(file);
+        return buffer;
+    }
 
-        u32 count = 0u;
-        const char *cursor = buffer;
-        const size_t token_len = std::strlen(token);
-        while (cursor && *cursor != '\0')
+    bool parse_string_range(const char *start, const char *end, const char *key, char *out, size_t out_cap)
+    {
+        const char *found = std::strstr(start, key);
+        if (found == 0 || found >= end)
         {
-            const char *found = std::strstr(cursor, token);
-            if (found == 0)
+            return false;
+        }
+        found = std::strchr(found, ':');
+        if (found == 0 || found >= end)
+        {
+            return false;
+        }
+        found += 1;
+        while (found < end && (*found == ' ' || *found == '\t' || *found == '\"'))
+        {
+            ++found;
+        }
+        const char *cursor = found;
+        while (cursor < end && *cursor != '\"' && *cursor != ',' && *cursor != '\n' && *cursor != '\r' && *cursor != ']')
+        {
+            ++cursor;
+        }
+        const size_t len = static_cast<size_t>(cursor - found);
+        const size_t copy_len = len < (out_cap - 1) ? len : (out_cap - 1);
+        std::memset(out, 0, out_cap);
+        if (copy_len > 0u)
+        {
+            std::memcpy(out, found, copy_len);
+            out[copy_len] = '\0';
+        }
+        return copy_len > 0u;
+    }
+
+    u32 parse_u32_range(const char *start, const char *end, const char *key, u32 fallback)
+    {
+        const char *found = std::strstr(start, key);
+        if (found == 0 || found >= end)
+        {
+            return fallback;
+        }
+        found = std::strchr(found, ':');
+        if (found == 0 || found >= end)
+        {
+            return fallback;
+        }
+        found += 1;
+        while (found < end && (*found == ' ' || *found == '\t' || *found == '\"'))
+        {
+            ++found;
+        }
+        u32 value = fallback;
+        std::sscanf(found, "%u", &value);
+        return value;
+    }
+
+    bool parse_entities_json(const char *buffer, const ModManifest &manifest, PrototypeStore &store, ModPrototypeSummary &summary)
+    {
+        const char *cursor = buffer;
+        while ((cursor = std::strstr(cursor, "\"id\"")) != 0)
+        {
+            const char *obj_start = cursor;
+            const char *obj_end = std::strchr(obj_start, '}');
+            if (obj_end == 0)
             {
                 break;
             }
-            count += 1u;
-            cursor = found + token_len;
-        }
 
-        delete[] buffer;
-        return count;
+            EntityPrototype proto;
+            std::memset(&proto, 0, sizeof(EntityPrototype));
+            if (!parse_string_range(obj_start, obj_end, "\"id\"", proto.id, kProtoIdMax))
+            {
+                cursor = obj_end + 1;
+                continue;
+            }
+
+            parse_string_range(obj_start, obj_end, "\"sprite\"", proto.sprite, kProtoIdMax);
+            parse_string_range(obj_start, obj_end, "\"pack\"", proto.pack, kProtoPackMax);
+            if (proto.pack[0] == '\0' && manifest.is_pack)
+            {
+                std::strncpy(proto.pack, manifest.name, kProtoPackMax - 1);
+            }
+            proto.speed = parse_u32_range(obj_start, obj_end, "\"speed\"", 1u);
+            proto.sprite_index = hash_string32(proto.sprite[0] ? proto.sprite : proto.id);
+
+            if (prototype_upsert_entity(store, proto))
+            {
+                summary.entities += 1u;
+            }
+            cursor = obj_end + 1;
+        }
+        return true;
     }
 
-    bool ingest_prototypes(ModRecord &record)
+    bool parse_networks_json(const char *buffer, PrototypeStore &store, ModPrototypeSummary &summary)
+    {
+        const char *cursor = buffer;
+        while ((cursor = std::strstr(cursor, "\"id\"")) != 0)
+        {
+            const char *obj_start = cursor;
+            const char *obj_end = std::strchr(obj_start, '}');
+            if (obj_end == 0)
+            {
+                break;
+            }
+
+            NetworkPrototype proto;
+            std::memset(&proto, 0, sizeof(NetworkPrototype));
+            if (!parse_string_range(obj_start, obj_end, "\"id\"", proto.id, kProtoIdMax))
+            {
+                cursor = obj_end + 1;
+                continue;
+            }
+            proto.capacity = parse_u32_range(obj_start, obj_end, "\"capacity\"", 100u);
+            if (prototype_upsert_network(store, proto))
+            {
+                summary.networks += 1u;
+            }
+            cursor = obj_end + 1;
+        }
+        return true;
+    }
+
+    bool parse_recipes_json(const char *buffer, PrototypeStore &store, ModPrototypeSummary &summary)
+    {
+        const char *cursor = buffer;
+        while ((cursor = std::strstr(cursor, "\"id\"")) != 0)
+        {
+            const char *obj_start = cursor;
+            const char *obj_end = std::strchr(obj_start, '}');
+            if (obj_end == 0)
+            {
+                break;
+            }
+
+            RecipePrototype proto;
+            std::memset(&proto, 0, sizeof(RecipePrototype));
+            if (!parse_string_range(obj_start, obj_end, "\"id\"", proto.id, kProtoIdMax))
+            {
+                cursor = obj_end + 1;
+                continue;
+            }
+            proto.time = parse_u32_range(obj_start, obj_end, "\"time\"", 1u);
+            proto.input_cost = parse_u32_range(obj_start, obj_end, "\"input\"", 1u);
+            proto.output_yield = parse_u32_range(obj_start, obj_end, "\"output\"", 1u);
+            if (prototype_upsert_recipe(store, proto))
+            {
+                summary.recipes += 1u;
+            }
+            cursor = obj_end + 1;
+        }
+        return true;
+    }
+
+    bool parse_research_json(const char *buffer, PrototypeStore &store, ModPrototypeSummary &summary)
+    {
+        const char *cursor = buffer;
+        while ((cursor = std::strstr(cursor, "\"id\"")) != 0)
+        {
+            const char *obj_start = cursor;
+            const char *obj_end = std::strchr(obj_start, '}');
+            if (obj_end == 0)
+            {
+                break;
+            }
+
+            ResearchPrototype proto;
+            std::memset(&proto, 0, sizeof(ResearchPrototype));
+            if (!parse_string_range(obj_start, obj_end, "\"id\"", proto.id, kProtoIdMax))
+            {
+                cursor = obj_end + 1;
+                continue;
+            }
+            proto.cost = parse_u32_range(obj_start, obj_end, "\"cost\"", 50u);
+            if (prototype_upsert_research(store, proto))
+            {
+                summary.research += 1u;
+            }
+            cursor = obj_end + 1;
+        }
+        return true;
+    }
+
+    bool parse_worldgen_json(const char *buffer, PrototypeStore &store, ModPrototypeSummary &summary)
+    {
+        const char *cursor = buffer;
+        while ((cursor = std::strstr(cursor, "\"biome\"")) != 0)
+        {
+            const char *obj_start = cursor;
+            const char *obj_end = std::strchr(obj_start, '}');
+            if (obj_end == 0)
+            {
+                break;
+            }
+
+            WorldgenPrototype proto;
+            std::memset(&proto, 0, sizeof(WorldgenPrototype));
+            if (!parse_string_range(obj_start, obj_end, "\"biome\"", proto.biome, kProtoIdMax))
+            {
+                cursor = obj_end + 1;
+                continue;
+            }
+            proto.weight = parse_u32_range(obj_start, obj_end, "\"weight\"", 1u);
+            proto.terrain = static_cast<u8>(parse_u32_range(obj_start, obj_end, "\"terrain\"", summary.worldgen % 4u));
+            if (prototype_upsert_worldgen(store, proto))
+            {
+                summary.worldgen += 1u;
+            }
+            cursor = obj_end + 1;
+        }
+        return true;
+    }
+
+    void ingest_prototypes(ModRecord &record, PrototypeStore &store)
     {
         StringBuffer path_buf;
         string_buffer_init(&path_buf, 256u);
 
         const char *root = record.manifest.path;
         ModPrototypeSummary &summary = record.summary;
+        std::memset(&summary, 0, sizeof(ModPrototypeSummary));
+
+        size_t size = 0u;
 
         path_join(&path_buf, root, "prototypes/entities.json");
-        summary.entities = count_token_occurrences(string_buffer_c_str(&path_buf), "\"id\"");
+        char *data = load_file_text(string_buffer_c_str(&path_buf), 64u * 1024u, size);
+        if (data != 0)
+        {
+            parse_entities_json(data, record.manifest, store, summary);
+            delete[] data;
+        }
 
+        string_buffer_clear(&path_buf);
         path_join(&path_buf, root, "prototypes/networks.json");
-        summary.networks = count_token_occurrences(string_buffer_c_str(&path_buf), "\"id\"");
+        data = load_file_text(string_buffer_c_str(&path_buf), 64u * 1024u, size);
+        if (data != 0)
+        {
+            parse_networks_json(data, store, summary);
+            delete[] data;
+        }
 
+        string_buffer_clear(&path_buf);
         path_join(&path_buf, root, "prototypes/recipes.json");
-        summary.recipes = count_token_occurrences(string_buffer_c_str(&path_buf), "\"id\"");
+        data = load_file_text(string_buffer_c_str(&path_buf), 64u * 1024u, size);
+        if (data != 0)
+        {
+            parse_recipes_json(data, store, summary);
+            delete[] data;
+        }
 
+        string_buffer_clear(&path_buf);
         path_join(&path_buf, root, "prototypes/research.json");
-        summary.research = count_token_occurrences(string_buffer_c_str(&path_buf), "\"id\"");
+        data = load_file_text(string_buffer_c_str(&path_buf), 64u * 1024u, size);
+        if (data != 0)
+        {
+            parse_research_json(data, store, summary);
+            delete[] data;
+        }
 
+        string_buffer_clear(&path_buf);
         path_join(&path_buf, root, "prototypes/worldgen.json");
-        summary.worldgen = count_token_occurrences(string_buffer_c_str(&path_buf), "\"biome\"");
+        data = load_file_text(string_buffer_c_str(&path_buf), 64u * 1024u, size);
+        if (data != 0)
+        {
+            parse_worldgen_json(data, store, summary);
+            delete[] data;
+        }
 
         string_buffer_free(&path_buf);
-        return true;
     }
 }
 
@@ -156,14 +387,14 @@ bool mod_loader_scan(ModRegistry &registry, const RuntimeConfig &config)
         }
     }
 
-    /* Also attempt a couple of default packs. */
-    std::strncpy(entries[entry_count], "packs/gfx_classic", kModNameMax - 1);
+    /* Default packs to always include basic art/sound/music. */
+    std::strncpy(entries[entry_count], "packs/gfx_pcx8_vga", kModNameMax - 1);
     entries[entry_count][kModNameMax - 1] = '\0';
     entry_count += 1u;
-    std::strncpy(entries[entry_count], "packs/sfx_classic", kModNameMax - 1);
+    std::strncpy(entries[entry_count], "packs/sfx_pcm4_4m", kModNameMax - 1);
     entries[entry_count][kModNameMax - 1] = '\0';
     entry_count += 1u;
-    std::strncpy(entries[entry_count], "packs/mus_classic", kModNameMax - 1);
+    std::strncpy(entries[entry_count], "packs/mus_ogg22_m", kModNameMax - 1);
     entries[entry_count][kModNameMax - 1] = '\0';
     entry_count += 1u;
 
@@ -202,14 +433,21 @@ bool mod_loader_resolve(ModRegistry &registry)
     return true;
 }
 
-bool mod_loader_apply(ModRegistry &registry)
+bool mod_loader_apply(ModRegistry &registry, PrototypeStore &prototypes)
 {
+    prototype_reset(prototypes);
     u32 i;
     for (i = 0u; i < registry.mod_count; ++i)
     {
         ModRecord &record = registry.mods[i];
-        ingest_prototypes(record);
+        ingest_prototypes(record, prototypes);
     }
+
     mod_registry_recalculate(registry);
+    registry.totals.entities = prototypes.entities.size;
+    registry.totals.networks = prototypes.networks.size;
+    registry.totals.recipes = prototypes.recipes.size;
+    registry.totals.research = prototypes.research.size;
+    registry.totals.worldgen = prototypes.worldgen.size;
     return true;
 }
