@@ -4,6 +4,8 @@
 #include "engine/config.h"
 #include "engine/state.h"
 
+struct RenderContext;
+
 struct EngineContext
 {
     EngineConfig config;
@@ -15,3 +17,4 @@ struct EngineContext
 bool engine_init(EngineContext &ctx, const char *config_path);
 void engine_shutdown(EngineContext &ctx);
 bool engine_tick(EngineContext &ctx);
+bool engine_render(EngineContext &ctx, RenderContext &rc);

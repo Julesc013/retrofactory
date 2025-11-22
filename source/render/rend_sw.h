@@ -5,3 +5,4 @@
 bool rend_sw_init();
 bool rend_sw_frame(RenderContext &ctx);
 void rend_sw_shutdown();
+const RenderBackbuffer &rend_sw_backbuffer();

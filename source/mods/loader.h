@@ -5,4 +5,4 @@
 
 bool mod_loader_scan(ModRegistry &registry, const RuntimeConfig &config);
 bool mod_loader_resolve(ModRegistry &registry);
-bool mod_loader_apply(const ModRegistry &registry);
+bool mod_loader_apply(ModRegistry &registry);

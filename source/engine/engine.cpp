@@ -1,4 +1,6 @@
 #include "engine/engine.h"
+#include "render/rend_api.h"
+#include "engine/snapshot.h"
 
 bool engine_init(EngineContext &ctx, const char *config_path)
 {
@@ -25,6 +27,23 @@ bool engine_tick(EngineContext &ctx)
         return false;
     }
     return core_tick(ctx.core_state);
+}
+
+bool engine_render(EngineContext &ctx, RenderContext &rc)
+{
+    if (ctx.state.phase != EnginePhase_Running)
+    {
+        return false;
+    }
+
+    SnapshotWorld snapshot;
+    if (!snapshot_build(ctx.core_state, snapshot))
+    {
+        return false;
+    }
+
+    rc.snapshot = &snapshot;
+    return render_frame(rc);
 }
 
 void engine_shutdown(EngineContext &ctx)

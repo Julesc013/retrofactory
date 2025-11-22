@@ -13,7 +13,24 @@ bool core_init(CoreState &state, const CoreConfig &config)
     recipies_init(state.recipes);
     research_init(state.research);
     scheduler_init(state.scheduler);
-    return world_init(state.world, config.initial_seed);
+    if (!world_init(state.world, config.initial_seed))
+    {
+        return false;
+    }
+
+    /* Bring up a couple of default networks and entities so hashes are non-trivial. */
+    networks_create_power(state.networks, 100u);
+    networks_create_fluid(state.networks, 40u);
+
+    const WorldDimensions &dim = world_get_dimensions(state.world);
+    const u32 spawn_x = dim.tile_count_x / 2u;
+    const u32 spawn_y = dim.tile_count_y / 2u;
+    entities_spawn(state.entities, state.world, 1u, spawn_x, spawn_y);
+
+    /* Periodic maintenance event every 60 ticks. */
+    scheduler_push_interval(state.scheduler, 30u, 60u, 100u, 1u, 0u);
+
+    return true;
 }
 
 bool core_tick(CoreState &state)
@@ -24,6 +41,8 @@ bool core_tick(CoreState &state)
         return false;
     }
 
+    networks_tick(state.networks, state.tick);
+    entities_tick(state.entities, state.world, state.tick);
     research_tick(state.research);
     state.tick += 1u;
     return true;

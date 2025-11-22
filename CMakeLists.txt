@@ -6,5 +6,8 @@ set(CMAKE_CXX_STANDARD 98)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(CTest)
+
 add_subdirectory(source)
+add_subdirectory(tools)
 add_subdirectory(tests)

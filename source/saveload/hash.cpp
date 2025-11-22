@@ -49,15 +49,44 @@ u64 compute_state_hash(const CoreState &state)
 
     if (state.world.tiles != 0 && state.world.tile_count > 0u)
     {
-        hash_bytes(hash, state.world.tiles, static_cast<size_t>(state.world.tile_count * sizeof(Tile)));
+    hash_bytes(hash, state.world.tiles, static_cast<size_t>(state.world.tile_count * sizeof(Tile)));
     }
 
-    hash_u32(hash, state.entities.entity_count);
-    hash_u32(hash, state.networks.power_networks);
-    hash_u32(hash, state.networks.fluid_networks);
-    hash_u32(hash, state.recipes.recipe_count);
-    hash_u32(hash, state.research.current_topic);
+    hash_u32(hash, state.entities.next_id);
+    hash_u32(hash, state.entities.entities.size);
+    if (state.entities.entities.size > 0u)
+    {
+        hash_bytes(hash, state.entities.entities.data, static_cast<size_t>(state.entities.entities.size * sizeof(EntityInstance)));
+    }
+
+    hash_u32(hash, state.networks.next_id);
+    hash_u32(hash, state.networks.power.size);
+    if (state.networks.power.size > 0u)
+    {
+        hash_bytes(hash, state.networks.power.data, static_cast<size_t>(state.networks.power.size * sizeof(NetworkNode)));
+    }
+    hash_u32(hash, state.networks.fluid.size);
+    if (state.networks.fluid.size > 0u)
+    {
+        hash_bytes(hash, state.networks.fluid.data, static_cast<size_t>(state.networks.fluid.size * sizeof(NetworkNode)));
+    }
+
+    hash_u32(hash, state.recipes.next_id);
+    hash_u32(hash, state.recipes.recipes.size);
+    if (state.recipes.recipes.size > 0u)
+    {
+        hash_bytes(hash, state.recipes.recipes.data, static_cast<size_t>(state.recipes.recipes.size * sizeof(Recipe)));
+    }
+
+    hash_u32(hash, state.research.active);
     hash_u32(hash, state.research.progress);
+    hash_u32(hash, state.research.topics.size);
+    if (state.research.topics.size > 0u)
+    {
+        hash_bytes(hash, state.research.topics.data, static_cast<size_t>(state.research.topics.size * sizeof(ResearchTopic)));
+    }
+
+    hash_u32(hash, state.scheduler.processed);
     hash_u32(hash, state.scheduler.count);
     if (state.scheduler.count > 0u)
     {

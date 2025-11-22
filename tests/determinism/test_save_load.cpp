@@ -6,6 +6,7 @@
 #include "world/world.h"
 #include "engine/snapshot.h"
 #include "engine/replay.h"
+#include "render/rend_api.h"
 
 namespace
 {
@@ -97,7 +98,39 @@ int main()
 
     /* Build snapshot and record replay frame to ensure hashing path is stable. */
     SnapshotWorld snapshot;
-    replay_record_frame(snapshot, *(ReplayFrame*)&hash_after); /* not used further */
+    if (!snapshot_build(loaded_state, snapshot))
+    {
+        core_shutdown(original_state);
+        core_shutdown(loaded_state);
+        return 1;
+    }
+
+    ReplayFrame frame;
+    if (!replay_record_frame(snapshot, frame) || frame.tick != loaded_state.tick)
+    {
+        core_shutdown(original_state);
+        core_shutdown(loaded_state);
+        return 1;
+    }
+
+    RenderBackbuffer buffer;
+    render_backbuffer_init(buffer, 64u, 64u);
+    RenderContext rc = make_render_context(&snapshot, &buffer);
+    if (!render_frame(rc))
+    {
+        render_backbuffer_free(buffer);
+        core_shutdown(original_state);
+        core_shutdown(loaded_state);
+        return 1;
+    }
+    const u64 checksum = render_backbuffer_checksum(buffer);
+    render_backbuffer_free(buffer);
+    if (checksum == 0u)
+    {
+        core_shutdown(original_state);
+        core_shutdown(loaded_state);
+        return 1;
+    }
 
     core_shutdown(original_state);
     core_shutdown(loaded_state);

@@ -1,7 +1,29 @@
 #include "world/worldgen.h"
 
 #include "system/rng.h"
+#include "utility/hash.h"
 #include "world/tile.h"
+
+namespace
+{
+    u8 classify(u32 mix)
+    {
+        const u32 band = mix % 100u;
+        if (band < 10u)
+        {
+            return 3u; /* water */
+        }
+        if (band < 40u)
+        {
+            return 1u; /* foliage */
+        }
+        if (band < 70u)
+        {
+            return 2u; /* ore */
+        }
+        return 0u; /* plains */
+    }
+}
 
 bool worldgen_generate(World &world, u64 seed)
 {
@@ -25,9 +47,9 @@ bool worldgen_generate(World &world, u64 seed)
             Tile *tile = world_get_tile(world, x, y);
             if (tile != 0)
             {
-                /* Placeholder deterministic terrain: keep zeroed for stable tests. */
-                (void)rng_next_u32(&rng);
-                tile->terrain_type = 0u;
+                const u32 coord_hash = hash_combine32(static_cast<u32>(seed), hash_combine32(x, y * 1664525u));
+                const u32 noise = rng_next_u32(&rng) ^ coord_hash;
+                tile->terrain_type = classify(noise);
             }
         }
     }

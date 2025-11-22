@@ -1,3 +1,5 @@
 {
-  "name": "base"
+  "name": "base",
+  "version": "1.0.0",
+  "description": "Base content pack for Retrofactory"
 }

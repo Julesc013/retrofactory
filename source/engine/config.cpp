@@ -21,5 +21,9 @@ bool engine_config_init(EngineConfig &config, const char *config_path)
     {
         return false;
     }
+    if (!mod_loader_apply(config.mods))
+    {
+        return false;
+    }
     return true;
 }

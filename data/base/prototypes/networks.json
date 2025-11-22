@@ -1,2 +1,6 @@
 {
+  "networks": [
+    { "id": "power_low" },
+    { "id": "fluid_basic" }
+  ]
 }

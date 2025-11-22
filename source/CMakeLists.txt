@@ -7,6 +7,23 @@ target_include_directories(system
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+add_library(utility
+    utility/geom.cpp
+    utility/hash.cpp
+    utility/path.cpp
+    utility/string.cpp
+)
+
+target_include_directories(utility
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(utility
+    PUBLIC
+        system
+)
+
 add_library(world
     world/world.cpp
     world/chunk.cpp
@@ -25,6 +42,7 @@ target_include_directories(world
 
 target_link_libraries(world
     PUBLIC
+        utility
         system
 )
 
@@ -40,6 +58,7 @@ target_include_directories(schedule
 
 target_link_libraries(schedule
     PUBLIC
+        utility
         system
 )
 
@@ -59,6 +78,7 @@ target_include_directories(runtime
 
 target_link_libraries(runtime
     PUBLIC
+        utility
         system
 )
 
@@ -79,6 +99,7 @@ target_include_directories(mods
 
 target_link_libraries(mods
     PUBLIC
+        utility
         system
         runtime
 )
@@ -97,6 +118,7 @@ target_include_directories(saveload
 target_link_libraries(saveload
     PUBLIC
         world
+        utility
         system
         schedule
         runtime
@@ -119,6 +141,7 @@ target_include_directories(core
 target_link_libraries(core
     PUBLIC
         world
+        utility
         system
         saveload
         schedule
@@ -141,7 +164,8 @@ target_include_directories(render
 target_link_libraries(render
     PUBLIC
         system
-        engine
+        utility
+        world
 )
 
 add_library(engine
@@ -162,6 +186,7 @@ target_link_libraries(engine
     PUBLIC
         core
         runtime
+        utility
         mods
         render
 )
@@ -185,5 +210,6 @@ target_include_directories(launcher
 target_link_libraries(launcher
     PUBLIC
         runtime
+        utility
         engine
 )

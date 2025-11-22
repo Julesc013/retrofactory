@@ -1,5 +1,7 @@
 #pragma once
 
+#include "render/rend_api.h"
+
 enum RenderBackend
 {
     RenderBackend_Software,

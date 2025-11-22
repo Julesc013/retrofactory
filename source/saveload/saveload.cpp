@@ -8,6 +8,7 @@
 #include "config/version.h"
 #include "world/world.h"
 #include "schedule/events.h"
+#include "utility/array.h"
 
 namespace
 {
@@ -56,12 +57,51 @@ bool save_core_state(const CoreState &state, const char *path)
     }
 
     /* Core subsystems */
-    ok = ok && write_all(&state.entities.entity_count, sizeof(u32), file);
-    ok = ok && write_all(&state.networks.power_networks, sizeof(u32), file);
-    ok = ok && write_all(&state.networks.fluid_networks, sizeof(u32), file);
-    ok = ok && write_all(&state.recipes.recipe_count, sizeof(u32), file);
-    ok = ok && write_all(&state.research.current_topic, sizeof(u32), file);
+    const u32 entity_count = state.entities.entities.size;
+    ok = ok && write_all(&state.entities.next_id, sizeof(EntityId), file);
+    ok = ok && write_all(&entity_count, sizeof(u32), file);
+    if (ok && entity_count > 0u)
+    {
+        const size_t bytes = static_cast<size_t>(entity_count * sizeof(EntityInstance));
+        ok = ok && write_all(state.entities.entities.data, bytes, file);
+    }
+
+    const u32 power_count = state.networks.power.size;
+    const u32 fluid_count = state.networks.fluid.size;
+    ok = ok && write_all(&state.networks.next_id, sizeof(NetworkId), file);
+    ok = ok && write_all(&power_count, sizeof(u32), file);
+    if (ok && power_count > 0u)
+    {
+        const size_t bytes = static_cast<size_t>(power_count * sizeof(NetworkNode));
+        ok = ok && write_all(state.networks.power.data, bytes, file);
+    }
+    ok = ok && write_all(&fluid_count, sizeof(u32), file);
+    if (ok && fluid_count > 0u)
+    {
+        const size_t bytes = static_cast<size_t>(fluid_count * sizeof(NetworkNode));
+        ok = ok && write_all(state.networks.fluid.data, bytes, file);
+    }
+
+    const u32 recipe_count = state.recipes.recipes.size;
+    ok = ok && write_all(&state.recipes.next_id, sizeof(RecipeId), file);
+    ok = ok && write_all(&recipe_count, sizeof(u32), file);
+    if (ok && recipe_count > 0u)
+    {
+        const size_t bytes = static_cast<size_t>(recipe_count * sizeof(Recipe));
+        ok = ok && write_all(state.recipes.recipes.data, bytes, file);
+    }
+
+    const u32 topic_count = state.research.topics.size;
+    ok = ok && write_all(&state.research.active, sizeof(ResearchId), file);
     ok = ok && write_all(&state.research.progress, sizeof(u32), file);
+    ok = ok && write_all(&topic_count, sizeof(u32), file);
+    if (ok && topic_count > 0u)
+    {
+        const size_t bytes = static_cast<size_t>(topic_count * sizeof(ResearchTopic));
+        ok = ok && write_all(state.research.topics.data, bytes, file);
+    }
+
+    ok = ok && write_all(&state.scheduler.processed, sizeof(u32), file);
     ok = ok && write_all(&state.scheduler.count, sizeof(u32), file);
     if (ok && state.scheduler.count > 0u)
     {
@@ -118,13 +158,76 @@ bool load_core_state(CoreState &state, const char *path)
 
     if (ok)
     {
-        ok = ok && read_all(&state.entities.entity_count, sizeof(u32), file);
-        ok = ok && read_all(&state.networks.power_networks, sizeof(u32), file);
-        ok = ok && read_all(&state.networks.fluid_networks, sizeof(u32), file);
-        ok = ok && read_all(&state.recipes.recipe_count, sizeof(u32), file);
-        ok = ok && read_all(&state.research.current_topic, sizeof(u32), file);
-        ok = ok && read_all(&state.research.progress, sizeof(u32), file);
+        u32 entity_count = 0u;
+        ok = ok && read_all(&state.entities.next_id, sizeof(EntityId), file);
+        ok = ok && read_all(&entity_count, sizeof(u32), file);
+        if (ok)
+        {
+            array_clear(state.entities.entities);
+            ok = array_resize(state.entities.entities, entity_count);
+            if (ok && entity_count > 0u)
+            {
+                const size_t bytes = static_cast<size_t>(entity_count * sizeof(EntityInstance));
+                ok = read_all(state.entities.entities.data, bytes, file);
+            }
+        }
 
+        u32 power_count = 0u;
+        u32 fluid_count = 0u;
+        ok = ok && read_all(&state.networks.next_id, sizeof(NetworkId), file);
+        ok = ok && read_all(&power_count, sizeof(u32), file);
+        if (ok)
+        {
+            array_clear(state.networks.power);
+            ok = array_resize(state.networks.power, power_count);
+            if (ok && power_count > 0u)
+            {
+                const size_t bytes = static_cast<size_t>(power_count * sizeof(NetworkNode));
+                ok = read_all(state.networks.power.data, bytes, file);
+            }
+        }
+        ok = ok && read_all(&fluid_count, sizeof(u32), file);
+        if (ok)
+        {
+            array_clear(state.networks.fluid);
+            ok = array_resize(state.networks.fluid, fluid_count);
+            if (ok && fluid_count > 0u)
+            {
+                const size_t bytes = static_cast<size_t>(fluid_count * sizeof(NetworkNode));
+                ok = read_all(state.networks.fluid.data, bytes, file);
+            }
+        }
+
+        u32 recipe_count = 0u;
+        ok = ok && read_all(&state.recipes.next_id, sizeof(RecipeId), file);
+        ok = ok && read_all(&recipe_count, sizeof(u32), file);
+        if (ok)
+        {
+            array_clear(state.recipes.recipes);
+            ok = array_resize(state.recipes.recipes, recipe_count);
+            if (ok && recipe_count > 0u)
+            {
+                const size_t bytes = static_cast<size_t>(recipe_count * sizeof(Recipe));
+                ok = read_all(state.recipes.recipes.data, bytes, file);
+            }
+        }
+
+        u32 topic_count = 0u;
+        ok = ok && read_all(&state.research.active, sizeof(ResearchId), file);
+        ok = ok && read_all(&state.research.progress, sizeof(u32), file);
+        ok = ok && read_all(&topic_count, sizeof(u32), file);
+        if (ok)
+        {
+            array_clear(state.research.topics);
+            ok = array_resize(state.research.topics, topic_count);
+            if (ok && topic_count > 0u)
+            {
+                const size_t bytes = static_cast<size_t>(topic_count * sizeof(ResearchTopic));
+                ok = read_all(state.research.topics.data, bytes, file);
+            }
+        }
+
+        ok = ok && read_all(&state.scheduler.processed, sizeof(u32), file);
         ok = ok && read_all(&state.scheduler.count, sizeof(u32), file);
         if (ok && state.scheduler.count > 0u)
         {

@@ -1,6 +1,7 @@
 #include "engine/replay.h"
 
-#include "saveload/hash.h"
+#include "utility/hash.h"
+#include "world/world.h"
 
 bool replay_record_frame(const SnapshotWorld &snapshot, ReplayFrame &out_frame)
 {
@@ -9,11 +10,18 @@ bool replay_record_frame(const SnapshotWorld &snapshot, ReplayFrame &out_frame)
         return false;
     }
     out_frame.tick = snapshot.tick;
-    CoreState fake_state;
-    fake_state.tick = snapshot.tick;
-    fake_state.world = *snapshot.world;
-    fake_state.rng.state = 0u;
-    fake_state.rng.inc = 0u;
-    out_frame.hash = compute_state_hash(fake_state);
+
+    u64 hash = 1469598103934665603ULL;
+    const WorldDimensions &dim = snapshot.world->dimensions;
+    hash = hash_bytes64(&dim, sizeof(WorldDimensions));
+    if (snapshot.world->tiles != 0 && snapshot.world->tile_count > 0u)
+    {
+        const size_t bytes = static_cast<size_t>(snapshot.world->tile_count * sizeof(Tile));
+        const u64 tiles_hash = hash_bytes64(snapshot.world->tiles, bytes);
+        hash ^= tiles_hash + (hash << 6) + (hash >> 2);
+    }
+    hash ^= snapshot.tick + (hash << 1);
+
+    out_frame.hash = hash;
     return true;
 }
