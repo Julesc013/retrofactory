@@ -43,6 +43,46 @@ target_link_libraries(schedule
         system
 )
 
+add_library(runtime
+    runtime/rt_config.cpp
+    runtime/rt_log.cpp
+    runtime/rt_profile.cpp
+    runtime/rt_error.cpp
+    runtime/rt_paths.cpp
+    runtime/rt_save_mgr.cpp
+)
+
+target_include_directories(runtime
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(runtime
+    PUBLIC
+        system
+)
+
+add_library(mods
+    mods/mod_api.cpp
+    mods/manifest.cpp
+    mods/registry.cpp
+    mods/depgraph.cpp
+    mods/loader.cpp
+    mods/script/scr_vm.cpp
+    mods/script/scr_bind.cpp
+)
+
+target_include_directories(mods
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(mods
+    PUBLIC
+        system
+        runtime
+)
+
 add_library(saveload
     saveload/saveload.cpp
     saveload/hash.cpp
@@ -59,6 +99,8 @@ target_link_libraries(saveload
         world
         system
         schedule
+        runtime
+        mods
 )
 
 add_library(core

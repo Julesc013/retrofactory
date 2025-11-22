@@ -1,3 +1,6 @@
 #pragma once
 
-// Placeholder for depgraph.h
+#include "mods/registry.h"
+
+/* Stub depgraph: currently returns registry order unchanged. */
+bool depgraph_resolve(const ModRegistry &registry, ModRegistry &resolved);
