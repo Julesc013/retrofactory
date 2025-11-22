@@ -1,3 +1,5 @@
 #pragma once
 
-// Placeholder for launcher_detect.h
+#include "launcher/common/launcher_model.h"
+
+LauncherEdition launcher_detect_default();

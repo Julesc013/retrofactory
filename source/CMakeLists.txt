@@ -165,3 +165,25 @@ target_link_libraries(engine
         mods
         render
 )
+
+# Launcher library to share common logic; entry targets should link this.
+add_library(launcher
+    launcher/common/launcher_model.cpp
+    launcher/common/launcher_config.cpp
+    launcher/common/launcher_detect.cpp
+    launcher/ui/text_ui.cpp
+    launcher/ui/sdl2_ui.cpp
+    launcher/ui/gdi_ui.cpp
+    launcher/ui/macosc_ui.cpp
+)
+
+target_include_directories(launcher
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(launcher
+    PUBLIC
+        runtime
+        engine
+)

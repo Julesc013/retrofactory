@@ -1,3 +1,5 @@
 #pragma once
 
-// Placeholder for text_ui.h
+#include "launcher/common/launcher_config.h"
+
+bool launcher_text_ui_run(const LauncherConfig &config);

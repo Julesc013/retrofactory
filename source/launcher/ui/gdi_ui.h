@@ -1,3 +1,5 @@
 #pragma once
 
-// Placeholder for gdi_ui.h
+#include "launcher/common/launcher_config.h"
+
+bool launcher_gdi_ui_run(const LauncherConfig &config);
