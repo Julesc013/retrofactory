@@ -1,0 +1,36 @@
+# CMake generated Testfile for 
+# Source directory: C:/Inbox/Git Repos/retrofactory/tests
+# Build directory: C:/Inbox/Git Repos/retrofactory/build/tests
+# 
+# This file includes the relevant testing commands required for 
+# testing this directory and lists subdirectories to be tested as well.
+add_test(placeholder_run "C:/Inbox/Git Repos/retrofactory/build/tests/retrofactory_placeholder_test.exe")
+set_tests_properties(placeholder_run PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;12;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(determinism_save_load "C:/Inbox/Git Repos/retrofactory/build/tests/test_save_load.exe")
+set_tests_properties(determinism_save_load PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;32;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(core_world "C:/Inbox/Git Repos/retrofactory/build/tests/test_world.exe")
+set_tests_properties(core_world PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;51;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(core_entities "C:/Inbox/Git Repos/retrofactory/build/tests/test_entities.exe")
+set_tests_properties(core_entities PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;59;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(core_networks "C:/Inbox/Git Repos/retrofactory/build/tests/test_networks.exe")
+set_tests_properties(core_networks PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;66;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(core_research "C:/Inbox/Git Repos/retrofactory/build/tests/test_research.exe")
+set_tests_properties(core_research PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;73;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(core_rng "C:/Inbox/Git Repos/retrofactory/build/tests/test_rng.exe")
+set_tests_properties(core_rng PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;80;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(render_sw "C:/Inbox/Git Repos/retrofactory/build/tests/test_render_sw.exe")
+set_tests_properties(render_sw PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;87;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(render_presenters "C:/Inbox/Git Repos/retrofactory/build/tests/test_presenters.exe")
+set_tests_properties(render_presenters PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;94;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(determinism_replay_basic "C:/Inbox/Git Repos/retrofactory/build/tests/test_replay_basic.exe")
+set_tests_properties(determinism_replay_basic PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;101;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(determinism_replay_cross "C:/Inbox/Git Repos/retrofactory/build/tests/test_replay_cross.exe")
+set_tests_properties(determinism_replay_cross PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;108;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(determinism_replay_editions "C:/Inbox/Git Repos/retrofactory/build/tests/test_replay_editions.exe")
+set_tests_properties(determinism_replay_editions PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;115;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(tools_asset_packer "C:/Inbox/Git Repos/retrofactory/build/tools/asset_packer_tool.exe")
+set_tests_properties(tools_asset_packer PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;117;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(tools_save_viewer_demo "C:/Inbox/Git Repos/retrofactory/build/tools/save_viewer.exe" "--demo")
+set_tests_properties(tools_save_viewer_demo PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;118;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
+add_test(worldgen_stability "C:/Inbox/Git Repos/retrofactory/build/tests/test_worldgen.exe")
+set_tests_properties(worldgen_stability PROPERTIES  WORKING_DIRECTORY "C:/Inbox/Git Repos/retrofactory" _BACKTRACE_TRIPLES "C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;125;add_test;C:/Inbox/Git Repos/retrofactory/tests/CMakeLists.txt;0;")
