@@ -1,0 +1,6 @@
+{
+  "name": "gfx_pcx8_vga",
+  "version": "1.0.0",
+  "priority": 80,
+  "dependencies": ["base"]
+}

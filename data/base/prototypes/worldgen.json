@@ -1,0 +1,6 @@
+{
+  "worldgen": [
+    { "biome": "temperate" },
+    { "biome": "desert" }
+  ]
+}

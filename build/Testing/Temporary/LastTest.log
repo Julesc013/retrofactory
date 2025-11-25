@@ -1,0 +1,241 @@
+Start testing: Nov 22 23:47 AUS Eastern Summer Time
+----------------------------------------------------------
+1/15 Testing: placeholder_run
+1/15 Test: placeholder_run
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/retrofactory_placeholder_test.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"placeholder_run" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"placeholder_run" end time: Nov 22 23:47 AUS Eastern Summer Time
+"placeholder_run" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/15 Testing: determinism_save_load
+2/15 Test: determinism_save_load
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_save_load.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"determinism_save_load" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"determinism_save_load" end time: Nov 22 23:47 AUS Eastern Summer Time
+"determinism_save_load" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/15 Testing: core_world
+3/15 Test: core_world
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_world.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"core_world" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.10 sec
+----------------------------------------------------------
+Test Passed.
+"core_world" end time: Nov 22 23:47 AUS Eastern Summer Time
+"core_world" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/15 Testing: core_entities
+4/15 Test: core_entities
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_entities.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"core_entities" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"core_entities" end time: Nov 22 23:47 AUS Eastern Summer Time
+"core_entities" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/15 Testing: core_networks
+5/15 Test: core_networks
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_networks.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"core_networks" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"core_networks" end time: Nov 22 23:47 AUS Eastern Summer Time
+"core_networks" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/15 Testing: core_research
+6/15 Test: core_research
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_research.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"core_research" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"core_research" end time: Nov 22 23:47 AUS Eastern Summer Time
+"core_research" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/15 Testing: core_rng
+7/15 Test: core_rng
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_rng.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"core_rng" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"core_rng" end time: Nov 22 23:47 AUS Eastern Summer Time
+"core_rng" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/15 Testing: render_sw
+8/15 Test: render_sw
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_render_sw.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"render_sw" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"render_sw" end time: Nov 22 23:47 AUS Eastern Summer Time
+"render_sw" time elapsed: 00:00:00
+----------------------------------------------------------
+
+9/15 Testing: render_presenters
+9/15 Test: render_presenters
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_presenters.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"render_presenters" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"render_presenters" end time: Nov 22 23:47 AUS Eastern Summer Time
+"render_presenters" time elapsed: 00:00:00
+----------------------------------------------------------
+
+10/15 Testing: determinism_replay_basic
+10/15 Test: determinism_replay_basic
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_replay_basic.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"determinism_replay_basic" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"determinism_replay_basic" end time: Nov 22 23:47 AUS Eastern Summer Time
+"determinism_replay_basic" time elapsed: 00:00:00
+----------------------------------------------------------
+
+11/15 Testing: determinism_replay_cross
+11/15 Test: determinism_replay_cross
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_replay_cross.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"determinism_replay_cross" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"determinism_replay_cross" end time: Nov 22 23:47 AUS Eastern Summer Time
+"determinism_replay_cross" time elapsed: 00:00:00
+----------------------------------------------------------
+
+12/15 Testing: determinism_replay_editions
+12/15 Test: determinism_replay_editions
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_replay_editions.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"determinism_replay_editions" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"determinism_replay_editions" end time: Nov 22 23:47 AUS Eastern Summer Time
+"determinism_replay_editions" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/15 Testing: tools_asset_packer
+13/15 Test: tools_asset_packer
+Command: "C:/Inbox/Git Repos/retrofactory/build/tools/asset_packer_tool.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"tools_asset_packer" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+Asset packer loaded 13 mods/packs from data
+Prototypes: entities=5 networks=5 recipes=5 research=5 worldgen=8
+ Bundled entities: 5, recipes: 5
+Bundled 6 packs into dist/
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"tools_asset_packer" end time: Nov 22 23:47 AUS Eastern Summer Time
+"tools_asset_packer" time elapsed: 00:00:00
+----------------------------------------------------------
+
+14/15 Testing: tools_save_viewer_demo
+14/15 Test: tools_save_viewer_demo
+Command: "C:/Inbox/Git Repos/retrofactory/build/tools/save_viewer.exe" "--demo"
+Directory: C:/Inbox/Git Repos/retrofactory
+"tools_save_viewer_demo" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+Save summary:
+ tick: 0
+ tiles: 4096
+ entities: 1
+  entity[0] id=1 proto=1 state=0 at 32,32
+ networks: P=1 F=1
+  power head load=0/100
+ research topics: 3 active=1 progress=0
+ hash: 14843054447642672051
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"tools_save_viewer_demo" end time: Nov 22 23:47 AUS Eastern Summer Time
+"tools_save_viewer_demo" time elapsed: 00:00:00
+----------------------------------------------------------
+
+15/15 Testing: worldgen_stability
+15/15 Test: worldgen_stability
+Command: "C:/Inbox/Git Repos/retrofactory/build/tests/test_worldgen.exe"
+Directory: C:/Inbox/Git Repos/retrofactory
+"worldgen_stability" start time: Nov 22 23:47 AUS Eastern Summer Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"worldgen_stability" end time: Nov 22 23:47 AUS Eastern Summer Time
+"worldgen_stability" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 22 23:47 AUS Eastern Summer Time

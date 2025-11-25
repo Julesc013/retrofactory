@@ -1,53 +1,40 @@
 #include "runtime/rt_log.h"
 
-#include "platform/plat_api.h"
+#include <cstdio>
 
 namespace
 {
-    void log_with_prefix(const char *prefix, const char *message)
+    RtLogSink g_sink = 0;
+
+    void emit(const char *msg)
     {
-        if (message == 0)
+        if (g_sink)
         {
-            message = "(null)";
+            g_sink(msg);
         }
-
-        char buffer[512];
-        buffer[0] = '\0';
-
-        unsigned int offset = 0u;
-        while (prefix[offset] != '\0' && offset < sizeof(buffer) - 1u)
+        else
         {
-            buffer[offset] = prefix[offset];
-            ++offset;
+            std::printf("%s\n", msg);
         }
-
-        if (offset < sizeof(buffer) - 2u)
-        {
-            buffer[offset++] = ' ';
-        }
-
-        unsigned int i = 0u;
-        while (message[i] != '\0' && offset < sizeof(buffer) - 1u)
-        {
-            buffer[offset++] = message[i++];
-        }
-        buffer[offset] = '\0';
-
-        plat_log_message(buffer);
     }
 }
 
-void log_info(const char *message)
+void rt_log_init(RtLogSink sink)
 {
-    log_with_prefix("[INFO]", message);
+    g_sink = sink;
 }
 
-void log_warn(const char *message)
+void rt_log_info(const char *msg)
 {
-    log_with_prefix("[WARN]", message);
+    emit(msg);
 }
 
-void log_error(const char *message)
+void rt_log_warn(const char *msg)
 {
-    log_with_prefix("[ERROR]", message);
+    emit(msg);
+}
+
+void rt_log_error(const char *msg)
+{
+    emit(msg);
 }

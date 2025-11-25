@@ -1,0 +1,6 @@
+{
+  "name": "saturn",
+  "version": "0.1.0",
+  "priority": 60,
+  "dependencies": ["base"]
+}

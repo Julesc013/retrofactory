@@ -1,0 +1,6 @@
+{
+  "entities": [
+    { "id": "miner", "speed": 1 },
+    { "id": "smelter", "speed": 1 }
+  ]
+}

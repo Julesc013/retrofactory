@@ -1,14 +1,15 @@
-#ifndef SYSTEM_RNG_H
-#define SYSTEM_RNG_H
+#pragma once
 
-#include "system/system_base.h"
+#include "system/types.h"
 
-struct RngState
+/* Deterministic PCG-style RNG stream. */
+struct RngStream
 {
-    uint64 state;
+    u64 state;
+    u64 inc;
 };
 
-void rng_seed(RngState &state, uint64 seed);
-uint32 rng_next_u32(RngState &state);
-
-#endif /* SYSTEM_RNG_H */
+void rng_seed(RngStream *rng, u64 seed, u64 sequence);
+u32 rng_next_u32(RngStream *rng);
+i32 rng_next_range(RngStream *rng, i32 min_inclusive, i32 max_inclusive);
+float rng_next_float01(RngStream *rng);

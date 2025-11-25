@@ -1,0 +1,5 @@
+{
+  "networks": [
+    { "id": "mercury_grid", "capacity": 90 }
+  ]
+}

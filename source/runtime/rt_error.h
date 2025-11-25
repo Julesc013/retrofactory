@@ -1,12 +1,10 @@
-#ifndef RUNTIME_RT_ERROR_H
-#define RUNTIME_RT_ERROR_H
+#pragma once
 
-enum RuntimeErrorCode
+enum RtErrorCode
 {
-    RUNTIME_ERROR_UNKNOWN = 0,
-    RUNTIME_ERROR_FATAL = 1
+    RT_OK = 0,
+    RT_ERR_IO = 1,
+    RT_ERR_INVALID = 2
 };
 
-void report_fatal_error(const char *message);
-
-#endif /* RUNTIME_RT_ERROR_H */
+const char *rt_error_to_string(RtErrorCode code);

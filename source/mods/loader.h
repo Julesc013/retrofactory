@@ -1,0 +1,9 @@
+#pragma once
+
+#include "mods/registry.h"
+#include "runtime/rt_config.h"
+#include "mods/prototypes.h"
+
+bool mod_loader_scan(ModRegistry &registry, const RuntimeConfig &config);
+bool mod_loader_resolve(ModRegistry &registry);
+bool mod_loader_apply(ModRegistry &registry, PrototypeStore &prototypes);

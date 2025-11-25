@@ -1,0 +1,6 @@
+{
+  "name": "venus",
+  "version": "0.1.0",
+  "priority": 30,
+  "dependencies": ["base"]
+}

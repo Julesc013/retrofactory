@@ -1,0 +1,6 @@
+{
+  "recipes": [
+    { "id": "iron_plate", "time": 10 },
+    { "id": "copper_wire", "time": 8 }
+  ]
+}

@@ -1,21 +1,44 @@
-#include "engine/eng_app.h"
-#include "platform/plat_api.h"
+#include "engine/engine.h"
+#include "engine/snapshot.h"
+#include "present/sdl2/pres_sdl2.h"
 
 int main(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
 
-    plat_services services;
-    services.log_message = 0;
-    services.sleep_ms = 0;
-
-    if (!plat_init(services))
+    EngineContext engine;
+    if (!engine_init(engine, 0))
     {
         return 1;
     }
 
-    const int result = engine_main_loop();
-    plat_shutdown();
-    return result;
+    RenderContext rc = make_render_context(0, 0);
+    rc.camera.width = 48u;
+    rc.camera.height = 36u;
+
+    if (!pres_sdl2_init())
+    {
+        engine_shutdown(engine);
+        return 1;
+    }
+
+    u32 frame;
+    for (frame = 0u; frame < 120u; ++frame)
+    {
+        SnapshotWorld snapshot;
+        if (!engine_tick(engine) || !snapshot_build(engine.core_state, snapshot))
+        {
+            break;
+        }
+        rc.snapshot = &snapshot;
+        if (!pres_sdl2_present(rc))
+        {
+            break;
+        }
+    }
+
+    pres_sdl2_shutdown();
+    engine_shutdown(engine);
+    return frame == 120u ? 0 : 1;
 }

@@ -1,8 +1,8 @@
-#ifndef RUNTIME_RT_LOG_H
-#define RUNTIME_RT_LOG_H
+#pragma once
 
-void log_info(const char *message);
-void log_warn(const char *message);
-void log_error(const char *message);
+typedef void (*RtLogSink)(const char *message);
 
-#endif /* RUNTIME_RT_LOG_H */
+void rt_log_init(RtLogSink sink);
+void rt_log_info(const char *msg);
+void rt_log_warn(const char *msg);
+void rt_log_error(const char *msg);

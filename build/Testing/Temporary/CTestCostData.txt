@@ -1,0 +1,16 @@
+placeholder_run 4 0.0030813
+determinism_save_load 3 0.010112
+core_world 1 0.100063
+core_entities 3 0.00405297
+core_networks 3 0.00777087
+core_research 3 0.00431113
+core_rng 4 0.00252803
+render_sw 3 0.00388217
+render_presenters 3 0.00448987
+determinism_replay_basic 3 0.00443273
+determinism_replay_cross 3 0.00416207
+determinism_replay_editions 2 0.0105666
+tools_asset_packer 2 0.0105219
+tools_save_viewer_demo 3 0.00388857
+worldgen_stability 3 0.0039334
+---

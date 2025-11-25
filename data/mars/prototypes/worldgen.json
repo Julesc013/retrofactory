@@ -1,0 +1,6 @@
+{
+  "worldgen": [
+    { "biome": "crater_field", "weight": 4, "terrain": 3 },
+    { "biome": "iron_ridge", "weight": 1, "terrain": 2 }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "worldgen": [
+    { "biome": "ash_dunes", "weight": 3, "terrain": 1 },
+    { "biome": "acid_plains", "weight": 2, "terrain": 2 }
+  ]
+}
