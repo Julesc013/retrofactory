@@ -3,6 +3,15 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#ifndef __cplusplus
+#if !defined(__bool_true_false_are_defined)
+typedef int bool;
+#define true 1
+#define false 0
+#define __bool_true_false_are_defined 1
+#endif
+#endif
+
 /* Canonical fixed-width aliases used across the sim core. */
 typedef int8_t   i8;
 typedef uint8_t  u8;

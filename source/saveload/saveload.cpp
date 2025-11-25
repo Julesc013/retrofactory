@@ -9,6 +9,19 @@
 #include "world/world.h"
 #include "schedule/events.h"
 #include "utility/array.h"
+#include "core/game_state.h"
+#include "core/trans_net.h"
+#include "core/travel_net.h"
+
+struct SaveWriter
+{
+    std::FILE *file;
+};
+
+struct SaveReader
+{
+    std::FILE *file;
+};
 
 namespace
 {
@@ -23,6 +36,21 @@ namespace
     bool read_all(void *data, std::size_t size, std::FILE *file)
     {
         return std::fread(data, 1u, size, file) == size;
+    }
+
+    GameState make_game_state(CoreState &state)
+    {
+        GameState gs;
+        gs.world = &state.world;
+        gs.entities = &state.entities;
+        gs.trans_power = &state.world.trans_power;
+        gs.trans_fluid = &state.world.trans_fluid;
+        gs.trans_data = &state.world.trans_data;
+        gs.travel_rail = &state.world.travel_rail;
+        gs.travel_road = &state.world.travel_road;
+        gs.travel_water = &state.world.travel_water;
+        gs.travel_air = &state.world.travel_air;
+        return gs;
     }
 }
 
@@ -55,6 +83,13 @@ bool save_core_state(const CoreState &state, const char *path)
     {
         ok = ok && write_all(state.world.tiles, static_cast<size_t>(state.world.tile_count * sizeof(Tile)), file);
     }
+    {
+        SaveWriter writer;
+        writer.file = file;
+        GameState gs = make_game_state(const_cast<CoreState &>(state));
+        saveload_write_travel_networks(&writer, &gs);
+        saveload_write_trans_networks(&writer, &gs);
+    }
 
     /* Core subsystems */
     const u32 entity_count = state.entities.entities.size;
@@ -64,22 +99,6 @@ bool save_core_state(const CoreState &state, const char *path)
     {
         const size_t bytes = static_cast<size_t>(entity_count * sizeof(EntityInstance));
         ok = ok && write_all(state.entities.entities.data, bytes, file);
-    }
-
-    const u32 power_count = state.networks.power.size;
-    const u32 fluid_count = state.networks.fluid.size;
-    ok = ok && write_all(&state.networks.next_id, sizeof(NetworkId), file);
-    ok = ok && write_all(&power_count, sizeof(u32), file);
-    if (ok && power_count > 0u)
-    {
-        const size_t bytes = static_cast<size_t>(power_count * sizeof(NetworkNode));
-        ok = ok && write_all(state.networks.power.data, bytes, file);
-    }
-    ok = ok && write_all(&fluid_count, sizeof(u32), file);
-    if (ok && fluid_count > 0u)
-    {
-        const size_t bytes = static_cast<size_t>(fluid_count * sizeof(NetworkNode));
-        ok = ok && write_all(state.networks.fluid.data, bytes, file);
     }
 
     const u32 recipe_count = state.recipes.recipes.size;
@@ -155,6 +174,14 @@ bool load_core_state(CoreState &state, const char *path)
         const size_t tile_bytes = static_cast<size_t>(state.world.tile_count * sizeof(Tile));
         ok = tile_bytes == 0u || read_all(state.world.tiles, tile_bytes, file);
     }
+    if (ok)
+    {
+        SaveReader reader;
+        reader.file = file;
+        GameState gs = make_game_state(state);
+        saveload_read_travel_networks(&reader, &gs);
+        saveload_read_trans_networks(&reader, &gs);
+    }
 
     if (ok)
     {
@@ -169,32 +196,6 @@ bool load_core_state(CoreState &state, const char *path)
             {
                 const size_t bytes = static_cast<size_t>(entity_count * sizeof(EntityInstance));
                 ok = read_all(state.entities.entities.data, bytes, file);
-            }
-        }
-
-        u32 power_count = 0u;
-        u32 fluid_count = 0u;
-        ok = ok && read_all(&state.networks.next_id, sizeof(NetworkId), file);
-        ok = ok && read_all(&power_count, sizeof(u32), file);
-        if (ok)
-        {
-            array_clear(state.networks.power);
-            ok = array_resize(state.networks.power, power_count);
-            if (ok && power_count > 0u)
-            {
-                const size_t bytes = static_cast<size_t>(power_count * sizeof(NetworkNode));
-                ok = read_all(state.networks.power.data, bytes, file);
-            }
-        }
-        ok = ok && read_all(&fluid_count, sizeof(u32), file);
-        if (ok)
-        {
-            array_clear(state.networks.fluid);
-            ok = array_resize(state.networks.fluid, fluid_count);
-            if (ok && fluid_count > 0u)
-            {
-                const size_t bytes = static_cast<size_t>(fluid_count * sizeof(NetworkNode));
-                ok = read_all(state.networks.fluid.data, bytes, file);
             }
         }
 
@@ -251,4 +252,32 @@ bool load_core_state(CoreState &state, const char *path)
 
     std::fclose(file);
     return ok;
+}
+
+void saveload_write_travel_networks(SaveWriter* w, const GameState* g)
+{
+    (void)w;
+    (void)g;
+    /* TODO: serialize travel graphs (rail/road/water/air). */
+}
+
+void saveload_read_travel_networks(SaveReader* r, GameState* g)
+{
+    (void)r;
+    (void)g;
+    /* TODO: deserialize travel graphs when format is defined. */
+}
+
+void saveload_write_trans_networks(SaveWriter* w, const GameState* g)
+{
+    (void)w;
+    (void)g;
+    /* TODO: serialize transmission graphs (power/fluid/data). */
+}
+
+void saveload_read_trans_networks(SaveReader* r, GameState* g)
+{
+    (void)r;
+    (void)g;
+    /* TODO: deserialize transmission graphs when format is defined. */
 }

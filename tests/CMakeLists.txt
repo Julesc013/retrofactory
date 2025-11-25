@@ -83,14 +83,14 @@ add_executable(test_render_sw
     render/test_render_sw.cpp
 )
 target_include_directories(test_render_sw PRIVATE ${PROJECT_SOURCE_DIR}/source)
-target_link_libraries(test_render_sw PRIVATE render core world utility system)
+target_link_libraries(test_render_sw PRIVATE engine render core world utility system)
 add_test(NAME render_sw COMMAND test_render_sw)
 
 add_executable(test_presenters
     render/test_presenters.cpp
 )
 target_include_directories(test_presenters PRIVATE ${PROJECT_SOURCE_DIR}/source)
-target_link_libraries(test_presenters PRIVATE present render core world utility system)
+target_link_libraries(test_presenters PRIVATE engine present render core world utility system)
 add_test(NAME render_presenters COMMAND test_presenters)
 
 add_executable(test_replay_basic
@@ -123,3 +123,25 @@ add_executable(test_worldgen
 target_include_directories(test_worldgen PRIVATE ${PROJECT_SOURCE_DIR}/source)
 target_link_libraries(test_worldgen PRIVATE world utility system)
 add_test(NAME worldgen_stability COMMAND test_worldgen)
+
+set(test_targets
+    placeholder_run
+    determinism_save_load
+    core_world
+    core_entities
+    core_networks
+    core_research
+    core_rng
+    render_sw
+    render_presenters
+    determinism_replay_basic
+    determinism_replay_cross
+    determinism_replay_editions
+    tools_asset_packer
+    tools_save_viewer_demo
+    worldgen_stability
+)
+
+foreach(test_name IN LISTS test_targets)
+    set_tests_properties(${test_name} PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+endforeach()

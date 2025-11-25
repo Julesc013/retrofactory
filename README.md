@@ -3,7 +3,7 @@
 - **Author:** Jules Carboni  
 - **Project:** Retrofactory 
 - **Version:** v10, 2025-11-17  
-- **Status:** Out of date 
+- **Status:** Updated 2025-11-22 (kernel + shell on restricted C++98; no separate C89 build)
 
 ---
 
@@ -49,7 +49,7 @@ Key goals:
 The system is structured as:
 
 - **rf-kernel** (engine library)
-  - Code in `src/core`, `src/engine`, `src/mods`, `src/runtime`, `src/util`.
+  - Code in `source/system`, `source/utility`, `source/core`, `source/world`, `source/schedule`, `source/saveload`, `source/runtime`, `source/mods`, with `source/engine` as orchestration glue — all written in the restricted C++98 subset (C-with-classes, C-friendly headers).
   - Owns:
     - Core simulation loop and tick scheduler.
     - ECS/data models for entities/items/fluids/networks.
@@ -67,14 +67,14 @@ The system is structured as:
   - All “what is a furnace, what is an inserter” lives here.
 
 - **rf-space** (space expansion mod)
-  - Lives in `data/mods_official/rf_space`.
+  - Lives in `data/space`.
   - Adds:
     - Space layer and orbits.
     - Planetary archetypes and macro parameters.
     - Space-borne infrastructure and transit rules.
 
 - **Planet packs & overhaul mods**
-  - Planet packs: define concrete planets and scenario rules using rf-space APIs.
+  - Planet packs: define concrete planets and scenario rules using rf-space APIs (current packs live under `data/mercury`, `data/venus`, `data/mars`, `data/jupiter`, `data/saturn`).
   - Overhauls: can replace rf-core content while still respecting rf-kernel interfaces.
 
 Everything except rf-kernel is “just a mod”; rf-core + rf-space form the canonical game configuration.
@@ -90,49 +90,76 @@ Repository:
 Top-level directories:
 
 - `docs/` – context notes, specs, and design history.
-- `cfg/` – default configs and edition/profile presets.
+- `config/` – default configs and edition/profile presets.
 - `data/` – base game content, official mods, user mods.
 - `external/` – vendored third-party libraries (SDL, Lua, etc.) when needed.
-- `build/` – out-of-tree build outputs.
+- `build/`, `build_win/` – out-of-tree build outputs.
 - `dist/` – packaged SKUs (installers, ZIPs, floppies/CDs).
 - `tools/` – asset packer, sprite builder, save inspector, mod SDK tools.
 - `tests/` – deterministic, replay, perf, and render tests.
-- `src/` – all engine code, split into layers:
+- `source/` – all engine code, split into layers:
 
-`src/core/`  
-: rf-core engine – simulation, world, networks, save, RNG, profiles  
+`source/config/`  
+: version/build config headers (C/C++ compatible)
 
-`src/engine/`  
-: host glue – config merge, logging integration, replay harness  
+`source/system/`  
+: low-level types, ids, units, RNG (C++98 subset, C-friendly)
 
-`src/mods/`  
-: mod loader, manifest parsing, Tier-0/Tier-1/Tier-2 plumbing  
+`source/utility/`  
+: mini-STL containers, strings, paths, hash, fixed/geom (C++98 subset)
 
-`src/runtime/`  
-: shared runtime services – config parser, logging, profiling, save manager, error handling  
+`source/core/`  
+: deterministic sim kernel – entities, networks, recipes, research (C++98 subset; no exceptions/RTTI/STL)
 
-`src/util/`  
-: low-level containers, string and path utilities, geometry helpers  
+`source/world/`  
+: world/planet/surface/colony/region/chunk/tile/transit/worldgen (C++98 subset)
 
-`src/render/`  
-: rendering backends (software and GPU), consuming snapshots from rf-core  
+`source/schedule/`  
+: events and tick scheduler (C++98 subset)
 
-`src/interface/`  
-: UI toolkit, HUD, launcher, client/server control loops  
+`source/saveload/`  
+: save/load, migration, deterministic hashing (C++98 subset)
 
-`src/plat/`  
-: OS/platform abstraction (window, input, audio, files, time), per-edition front-ends  
+`source/runtime/`  
+: runtime config, logging, profiling, error handling, save manager, paths (C++98 subset)
+
+`source/mods/`  
+: mod API, manifest, loader, depgraph, registry, script VM bindings (C++98 subset)
+
+`source/engine/`  
+: orchestration layer – config merge, replay harness, tick loop, snapshot builder (C++98 subset)
+
+`source/render/`  
+: render API and backends (C++98 subset)
+
+`source/present/`  
+: presentation backends (C++98 subset)
+
+`source/net/`  
+: lockstep networking, server/client logic (C++98 subset)
+
+`source/ui/`  
+: UI toolkit/HUD/debug overlays (C++98 subset)
+
+`source/platform/`  
+: OS/platform abstraction (window, input, audio, files, time), per-edition front-ends (C++98 subset)
+
+`source/launcher/`  
+: launcher model/config/detection + per-edition entry (C++98 subset)
 
 Strict dependencies:
 
-- `core` → `util` only.
-- `engine` → `core`, `util`, `runtime`.
-- `mods` → `core`, `engine`, `runtime`, `util`.
-- `render` → `core` (via snapshot API), `util`.
-- `interface` → `engine`, `render`, `runtime`, `util`.
-- `plat` → `interface`, `render`, `runtime`, OS APIs.
+- `system` has no deps; `utility` depends only on `system`.
+- `core/world/schedule/saveload/runtime/mods` depend on `system` + `utility` and never on render/present/net/ui/platform/launcher.
+- `engine` depends on the kernel (`system`, `utility`, `core`, `world`, `schedule`, `saveload`, `runtime`, `mods`).
+- `render` depends on engine snapshots + `system`/`utility` and has no platform headers.
+- `net` depends on `engine`, `runtime`, `utility`/`system`, and platform networking hooks.
+- `ui` depends on `engine`, `render`, `runtime`, `utility`/`system`, `mods`, and `net`; no direct platform calls.
+- `present` depends on `render` + `platform`.
+- `platform` provides OS glue (window/input/audio/fs/net/time) for `present`, `ui`, and `net`; it depends on OS APIs and `runtime`.
+- `launcher` depends on `platform`, `runtime`, `mods`, `config`, never on sim internals.
 
-rf-core never depends on `render`, `interface`, or `plat`.
+rf-core never depends on `render`, `present`, `net`, `ui`, or `platform`.
 
 ---
 
@@ -142,7 +169,7 @@ rf-core never depends on `render`, `interface`, or `plat`.
 
 Each **edition** is a packaged combination of:
 
-- One or more **platform front-ends** from `src/plat`.
+- One or more **platform front-ends** from `source/platform`.
 - A set of **edition profiles** (cap tiers).
 - A bundled subset of **official mods**.
 
@@ -219,10 +246,7 @@ Examples:
   - Many colonies, large caps.
   - Advanced algorithms for key systems (e.g. power factor, richer fluid/heat, more AI).
 
-Profiles are declared in:
-
-- `data/base/prototypes/profiles.json` – canonical description.
-- `cfg/profiles_*.cfg` – platform/edition-specific overrides (paths, UI defaults, etc.).
+Profiles are currently driven by config presets (`config/edition_*.cfg`) and default values; the data-driven profile tables under `data/base/prototypes/` are still TODO.
 
 Profiles are immutable per save; loaders enforce profile compatibility.
 
@@ -287,22 +311,22 @@ Determinism is non-negotiable for rf-core and any Tier-0/Tier-1 mods:
 
 ### 5.1 Language Rules
 
-rf-core and shared engine code:
+**Kernel and shared sim (restricted C++98):**
 
-- Use a restricted **C++98 subset** (“C with classes”).
-- Allowed:
-  - POD structs and simple classes.
-  - Namespaces.
-  - Function overloading.
-  - RAII for lifetime management in non-hot paths.
-  - Small, simple templates (e.g. `UfArray<T>`).
-- Forbidden in rf-core/engine:
-  - Exceptions (`throw`, `try`/`catch`).
-  - RTTI (`dynamic_cast`, `typeid`).
-  - Heavy STL use in hot paths.
-  - Non-deterministic language features and UB.
+- Directories: `source/system`, `source/utility`, `source/core`, `source/world`, `source/schedule`, `source/saveload`, `source/runtime`, `source/mods`, and determinism-critical tests.
+- Language subset: C-with-classes C++98.
+- Rules:
+  - No exceptions or RTTI.
+  - Avoid STL in hot paths; prefer `utility/*` containers and never expose STL or platform types in public headers.
+  - Keep headers C-friendly for retro toolchains; minimal templates outside `utility`.
+  - No float/double in any code path that mutates simulation state; deterministic RNG only.
+- Use `.cpp`/`.h` and compile with a C++ compiler even for retro targets.
 
-Platform and tooling code (`src/plat`, `tools`) may use more modern C++ and STL as needed, with a **hard boundary**: no platform headers or STL types are allowed to leak into rf-core public headers.
+**Shell/render/platform/tools (still C++98):**
+
+- Directories: `source/engine`, `source/render`, `source/present`, `source/net`, `source/ui`, `source/launcher`, `source/platform`, `tools/`, non-sim tests.
+- Allowed: moderate STL in non-hot paths, RAII, floats for render/UI math.
+- Forbidden: leaking platform headers or STL types into kernel-facing headers; exceptions/RTTI still discouraged to keep portability and determinism.
 
 ### 5.2 Toolchains
 
@@ -317,6 +341,8 @@ rf-kernel must build with:
   - OpenWatcom for DOS/Win3.x.
   - Emscripten (WASM) for Web.
   - 68k/PPC toolchains for Classic Mac.
+
+The kernel’s C++98 subset stays within what these retro compilers can realistically support; heavier C++ features stay out of sim-critical layers.
 
 Compiler versions and flags are pinned in a build document. Any change to supported toolchains requires:
 
@@ -626,21 +652,16 @@ The macro layer is deliberately kept simple in v1, with hooks for expansions in 
   - Deterministic by construction.
   - Supported on all full editions.
 
-- **Tier 1 – Script mods (future)**
-  - Deterministic VM (Lua-like) under `engine/script`.
+- **Tier 1 – Script mods (planned Lua)**
+  - Deterministic VM (Lua-like) under `source/mods/script`.
   - Strict sandbox:
     - No IO, no wall-clock, no threads.
     - Bounded instructions per tick.
   - Allowed on Nx/Lx/Mx/Ax/Wx-full when explicitly enabled.
   - Forbidden in deterministic multiplayer and retro editions.
 
-- **Tier 2 – Native mods (future)**
-  - C ABI plugins.
-  - Potentially non-deterministic and platform-specific.
-  - Disabled by default, never allowed on:
-    - Retro editions.
-    - Wx (Web).
-    - Lockstep multiplayer sessions.
+- **Native/binary mods**
+  - Not supported or planned; no runtime loading of `.dll`/`.so`/`.dylib` from mods.
 
 ### 10.2 Mod Manifests and Loader
 
@@ -655,12 +676,12 @@ Mod manifests include:
 Loader responsibilities:
 
 - Scan mod directories:
-  - `data/mods_official/`
-  - `data/mods_user/`
+  - `data/` for built-in packs (`base`, planet packs, `space`, `packs/*`).
+  - `data/mods/` (or edition-configured user mod path).
 - Parse manifests.
 - Resolve dependency graph and load order deterministically.
-- Load Tier-0 data into rf-core prototypes.
-- Enforce edition/profile restrictions.
+- Load Tier-0 data into rf-core prototypes; run Tier-1 scripts in the sandboxed VM when enabled.
+- Enforce edition/profile restrictions and prohibition on native/binary plugins.
 
 rf-core does not know where prototypes come from; it only sees the resolved, loaded prototype tables.
 
@@ -668,7 +689,7 @@ rf-core does not know where prototypes come from; it only sees the resolved, loa
 
 ## 11. Front-Ends, Platforms, and Rendering
 
-### 11.1 Platform Layer (src/plat)
+### 11.1 Platform Layer (source/platform)
 
 Platform subdirectories implement `plat_api`:
 
@@ -697,7 +718,7 @@ They do **not**:
 - Implement game logic.
 - Bypass rf-kernel for simulation changes.
 
-### 11.2 Rendering (src/render)
+### 11.2 Rendering (source/render)
 
 Render layer backends:
 
@@ -721,11 +742,11 @@ Render backends read snapshots and draw frames. Platforms are responsible only f
 
 ---
 
-## 12. Interface Layer and Networking
+## 12. UI and Networking
 
-### 12.1 UI Toolkit and Game UI
+### 12.1 UI Toolkit and Game UI (source/ui)
 
-`src/interface` owns:
+`source/ui` owns:
 
 - UI primitives:
   - Panels, lists, buttons, labels, checkboxes, etc.
@@ -737,7 +758,7 @@ Render backends read snapshots and draw frames. Platforms are responsible only f
 - Debug UI:
   - UPS counters, profiler overlays, network inspectors.
 
-### 12.2 Launcher
+### 12.2 Launcher (source/launcher)
 
 Launcher responsibilities:
 
@@ -753,9 +774,9 @@ Launcher responsibilities:
 - Input options:
   - Keybindings, controller configurations.
 
-### 12.3 Networking
+### 12.3 Networking (source/net)
 
-Networking is **lockstep deterministic** for v1:
+Networking (`source/net`) is **lockstep deterministic** for v1:
 
 - Server stores authoritative state.
 - Clients send input streams only.
@@ -818,9 +839,8 @@ Representative SKUs:
 Directory layout inside installs:
 
 - `RETROFACTORY/bin/` – executables.
-- `RETROFACTORY/data/` – base game content.
-- `RETROFACTORY/mods_official/` – official expansions.
-- `RETROFACTORY/mods/` – user mods.
+- `RETROFACTORY/data/` – base game content plus official packs (`base`, planet packs, `space`, `packs/*`).
+- `RETROFACTORY/mods/` – user mods (same layout as `data/` packs).
 - `RETROFACTORY/saves/`
 - `RETROFACTORY/config/`
 - `RETROFACTORY/docs/`
@@ -899,7 +919,7 @@ From `plan.md` and later roadmap notes:
 
 Future phases (beyond v1):
 
-- Tier-1 scripting, Tier-2 native mods.
+- Tier-1 scripting support and richer mod SDK.
 - Enhanced thermodynamics and macro economy.
 - Deeper AI, policies, and scenario systems.
 

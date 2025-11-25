@@ -114,17 +114,17 @@ int main()
     }
 
     RenderBackbuffer buffer;
-    render_backbuffer_init(buffer, 64u, 64u);
+    render_backbuffer_init(&buffer, 64u, 64u);
     RenderContext rc = make_render_context(&snapshot, &buffer);
-    if (!render_frame(rc))
+    if (!render_frame(&rc))
     {
-        render_backbuffer_free(buffer);
+        render_backbuffer_free(&buffer);
         core_shutdown(original_state);
         core_shutdown(loaded_state);
         return 1;
     }
-    const u64 checksum = render_backbuffer_checksum(buffer);
-    render_backbuffer_free(buffer);
+    const u64 checksum = render_backbuffer_checksum(&buffer);
+    render_backbuffer_free(&buffer);
     if (checksum == 0u)
     {
         core_shutdown(original_state);

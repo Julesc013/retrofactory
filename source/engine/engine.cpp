@@ -2,6 +2,17 @@
 #include "render/rend_api.h"
 #include "engine/snapshot.h"
 
+namespace
+{
+    RenderBackendId pick_default_backend()
+    {
+        RenderBackendId id;
+        id.family = REND_FAMILY_SDL;
+        id.version = REND_VER_SDL2;
+        return id;
+    }
+}
+
 bool engine_init(EngineContext &ctx, const char *config_path)
 {
     engine_state_init(ctx.state);
@@ -15,6 +26,23 @@ bool engine_init(EngineContext &ctx, const char *config_path)
     if (!core_init(ctx.core_state, ctx.core_config))
     {
         return false;
+    }
+
+    RenderInitParams render_params;
+    render_params.backend = pick_default_backend();
+    render_params.width = 0;
+    render_params.height = 0;
+    render_params.fullscreen = 0;
+    render_params.vsync = 0;
+    render_params.native_window = 0;
+    if (!render_init(&render_params))
+    {
+        render_params.backend.family = REND_FAMILY_SOFTWARE;
+        render_params.backend.version = REND_VER_NONE;
+        if (!render_init(&render_params))
+        {
+            return false;
+        }
     }
 
     engine_state_set_phase(ctx.state, EnginePhase_Running);
@@ -64,11 +92,12 @@ bool engine_render(EngineContext &ctx, RenderContext &rc)
             rc.camera.origin_y = focus.y > static_cast<u32>(half_h) ? static_cast<i32>(focus.y) - half_h : 0;
         }
     }
-    return render_frame(rc);
+    return render_draw(&rc);
 }
 
 void engine_shutdown(EngineContext &ctx)
 {
+    render_shutdown();
     core_shutdown(ctx.core_state);
     prototypes_free(ctx.config.prototypes);
     engine_state_set_phase(ctx.state, EnginePhase_Shutdown);

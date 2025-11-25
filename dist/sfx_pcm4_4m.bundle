@@ -1,0 +1,9 @@
+name=sfx_pcm4_4m
+version=1.0.0
+priority=85
+pack=true
+prototypes entities=0 networks=0 recipes=0 research=0 worldgen=0
+pack_json={
+  "name": "sfx_pcm4_4m"
+}
+

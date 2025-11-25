@@ -11,5 +11,6 @@ int main(int argc, char **argv)
     {
         return 1;
     }
-    return launcher_gdi_ui_run(config) ? 0 : 1;
+    (void)config;
+    return launcher_gdi_ui_run() ? 0 : 1;
 }

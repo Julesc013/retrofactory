@@ -19,36 +19,36 @@ int main()
     }
 
     RenderBackbuffer buffer;
-    render_backbuffer_init(buffer, 64u, 64u);
+    render_backbuffer_init(&buffer, 64u, 64u);
     RenderContext rc = make_render_context(&snapshot, &buffer);
 
-    if (!rend_sw_init())
+    if (!rend_sw_init(0, 0))
     {
-        render_backbuffer_free(buffer);
+        render_backbuffer_free(&buffer);
         core_shutdown(state);
         return 1;
     }
 
-    if (!rend_sw_frame(rc))
+    if (!rend_sw_frame(&rc, 0))
     {
-        rend_sw_shutdown();
-        render_backbuffer_free(buffer);
+        rend_sw_shutdown(0);
+        render_backbuffer_free(&buffer);
         core_shutdown(state);
         return 1;
     }
 
-    const u64 first = render_backbuffer_checksum(buffer);
-    if (!rend_sw_frame(rc))
+    const u64 first = render_backbuffer_checksum(&buffer);
+    if (!rend_sw_frame(&rc, 0))
     {
-        rend_sw_shutdown();
-        render_backbuffer_free(buffer);
+        rend_sw_shutdown(0);
+        render_backbuffer_free(&buffer);
         core_shutdown(state);
         return 1;
     }
-    const u64 second = render_backbuffer_checksum(buffer);
+    const u64 second = render_backbuffer_checksum(&buffer);
 
-    rend_sw_shutdown();
-    render_backbuffer_free(buffer);
+    rend_sw_shutdown(0);
+    render_backbuffer_free(&buffer);
     core_shutdown(state);
     return (first == 0u || first != second) ? 1 : 0;
 }

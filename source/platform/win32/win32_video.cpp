@@ -17,15 +17,15 @@ bool win32_video_init(u32 width, u32 height)
     return true;
 }
 
-bool win32_video_present(const RenderBackbuffer &buffer)
+bool win32_video_present(const RenderBackbuffer *buffer)
 {
-    if (buffer.width == 0u || buffer.height == 0u || buffer.pixels.data == 0)
+    if (buffer == 0 || buffer->width == 0u || buffer->height == 0u || buffer->pixels == 0)
     {
         return false;
     }
     g_last_frame = render_backbuffer_checksum(buffer);
-    g_width = buffer.width;
-    g_height = buffer.height;
+    g_width = buffer->width;
+    g_height = buffer->height;
     return true;
 }
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "render/rend_api.h"
+#include "present/present_backend.h"
 
-bool pres_web_init();
-bool pres_web_present(RenderContext &ctx);
-void pres_web_shutdown();
+const PresentVTable *present_vtable_web(void);

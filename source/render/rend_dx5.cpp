@@ -7,21 +7,25 @@ namespace
     const u32 kDxHeight = 480u;
 }
 
-bool rend_dx5_init()
+bool rend_dx5_init(void)
 {
-    return render_backbuffer_init(g_dx_buffer, kDxWidth, kDxHeight);
+    return render_backbuffer_init(&g_dx_buffer, kDxWidth, kDxHeight);
 }
 
-bool rend_dx5_frame(RenderContext &ctx)
+bool rend_dx5_frame(RenderContext *ctx)
 {
-    if (ctx.target == 0)
+    if (ctx == 0)
     {
-        ctx.target = &g_dx_buffer;
+        return false;
+    }
+    if (ctx->target == 0)
+    {
+        ctx->target = &g_dx_buffer;
     }
     return render_frame(ctx);
 }
 
-void rend_dx5_shutdown()
+void rend_dx5_shutdown(void)
 {
-    render_backbuffer_free(g_dx_buffer);
+    render_backbuffer_free(&g_dx_buffer);
 }

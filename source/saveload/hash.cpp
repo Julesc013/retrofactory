@@ -49,7 +49,86 @@ u64 compute_state_hash(const CoreState &state)
 
     if (state.world.tiles != 0 && state.world.tile_count > 0u)
     {
-    hash_bytes(hash, state.world.tiles, static_cast<size_t>(state.world.tile_count * sizeof(Tile)));
+        hash_bytes(hash, state.world.tiles, static_cast<size_t>(state.world.tile_count * sizeof(Tile)));
+    }
+
+    /* Transmission networks */
+    hash_u32(hash, static_cast<u32>(state.world.trans_power.node_count));
+    hash_u32(hash, static_cast<u32>(state.world.trans_power.edge_count));
+    if (state.world.trans_power.nodes != 0 && state.world.trans_power.node_count > 0)
+    {
+        hash_bytes(hash, state.world.trans_power.nodes, static_cast<size_t>(state.world.trans_power.node_count * sizeof(TransNode)));
+    }
+    if (state.world.trans_power.edges != 0 && state.world.trans_power.edge_count > 0)
+    {
+        hash_bytes(hash, state.world.trans_power.edges, static_cast<size_t>(state.world.trans_power.edge_count * sizeof(TransEdge)));
+    }
+
+    hash_u32(hash, static_cast<u32>(state.world.trans_fluid.node_count));
+    hash_u32(hash, static_cast<u32>(state.world.trans_fluid.edge_count));
+    if (state.world.trans_fluid.nodes != 0 && state.world.trans_fluid.node_count > 0)
+    {
+        hash_bytes(hash, state.world.trans_fluid.nodes, static_cast<size_t>(state.world.trans_fluid.node_count * sizeof(TransNode)));
+    }
+    if (state.world.trans_fluid.edges != 0 && state.world.trans_fluid.edge_count > 0)
+    {
+        hash_bytes(hash, state.world.trans_fluid.edges, static_cast<size_t>(state.world.trans_fluid.edge_count * sizeof(TransEdge)));
+    }
+
+    hash_u32(hash, static_cast<u32>(state.world.trans_data.node_count));
+    hash_u32(hash, static_cast<u32>(state.world.trans_data.edge_count));
+    if (state.world.trans_data.nodes != 0 && state.world.trans_data.node_count > 0)
+    {
+        hash_bytes(hash, state.world.trans_data.nodes, static_cast<size_t>(state.world.trans_data.node_count * sizeof(TransNode)));
+    }
+    if (state.world.trans_data.edges != 0 && state.world.trans_data.edge_count > 0)
+    {
+        hash_bytes(hash, state.world.trans_data.edges, static_cast<size_t>(state.world.trans_data.edge_count * sizeof(TransEdge)));
+    }
+
+    /* Travel networks */
+    hash_u32(hash, static_cast<u32>(state.world.travel_rail.node_count));
+    hash_u32(hash, static_cast<u32>(state.world.travel_rail.segment_count));
+    if (state.world.travel_rail.nodes != 0 && state.world.travel_rail.node_count > 0)
+    {
+        hash_bytes(hash, state.world.travel_rail.nodes, static_cast<size_t>(state.world.travel_rail.node_count * sizeof(TravelNode)));
+    }
+    if (state.world.travel_rail.segments != 0 && state.world.travel_rail.segment_count > 0)
+    {
+        hash_bytes(hash, state.world.travel_rail.segments, static_cast<size_t>(state.world.travel_rail.segment_count * sizeof(TravelSegment)));
+    }
+
+    hash_u32(hash, static_cast<u32>(state.world.travel_road.node_count));
+    hash_u32(hash, static_cast<u32>(state.world.travel_road.segment_count));
+    if (state.world.travel_road.nodes != 0 && state.world.travel_road.node_count > 0)
+    {
+        hash_bytes(hash, state.world.travel_road.nodes, static_cast<size_t>(state.world.travel_road.node_count * sizeof(TravelNode)));
+    }
+    if (state.world.travel_road.segments != 0 && state.world.travel_road.segment_count > 0)
+    {
+        hash_bytes(hash, state.world.travel_road.segments, static_cast<size_t>(state.world.travel_road.segment_count * sizeof(TravelSegment)));
+    }
+
+    hash_u32(hash, static_cast<u32>(state.world.travel_water.node_count));
+    hash_u32(hash, static_cast<u32>(state.world.travel_water.segment_count));
+    if (state.world.travel_water.nodes != 0 && state.world.travel_water.node_count > 0)
+    {
+        hash_bytes(hash, state.world.travel_water.nodes, static_cast<size_t>(state.world.travel_water.node_count * sizeof(TravelNode)));
+    }
+    if (state.world.travel_water.segments != 0 && state.world.travel_water.segment_count > 0)
+    {
+        hash_bytes(hash, state.world.travel_water.segments, static_cast<size_t>(state.world.travel_water.segment_count * sizeof(TravelSegment)));
+    }
+
+    hash_u32(hash, static_cast<u32>(state.world.travel_air.node_count));
+    hash_u32(hash, static_cast<u32>(state.world.travel_air.segment_count));
+    if (state.world.travel_air.nodes != 0 && state.world.travel_air.node_count > 0)
+    {
+        hash_bytes(hash, state.world.travel_air.nodes, static_cast<size_t>(state.world.travel_air.node_count * sizeof(TravelNode)));
+    }
+    if (state.world.travel_air.segments != 0 && state.world.travel_air.segment_count > 0)
+    {
+        hash_bytes(hash, state.world.travel_air.segments, static_cast<size_t>(state.world.travel_air.segment_count * sizeof(TravelSegment)));
     }
 
     hash_u32(hash, state.entities.next_id);
@@ -57,18 +136,6 @@ u64 compute_state_hash(const CoreState &state)
     if (state.entities.entities.size > 0u)
     {
         hash_bytes(hash, state.entities.entities.data, static_cast<size_t>(state.entities.entities.size * sizeof(EntityInstance)));
-    }
-
-    hash_u32(hash, state.networks.next_id);
-    hash_u32(hash, state.networks.power.size);
-    if (state.networks.power.size > 0u)
-    {
-        hash_bytes(hash, state.networks.power.data, static_cast<size_t>(state.networks.power.size * sizeof(NetworkNode)));
-    }
-    hash_u32(hash, state.networks.fluid.size);
-    if (state.networks.fluid.size > 0u)
-    {
-        hash_bytes(hash, state.networks.fluid.data, static_cast<size_t>(state.networks.fluid.size * sizeof(NetworkNode)));
     }
 
     hash_u32(hash, state.recipes.next_id);

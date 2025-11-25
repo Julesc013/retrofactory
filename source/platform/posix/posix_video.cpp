@@ -5,9 +5,9 @@ namespace
     u64 g_last_frame = 0u;
 }
 
-bool posix_video_present(const RenderBackbuffer &buffer)
+bool posix_video_present(const RenderBackbuffer *buffer)
 {
-    if (buffer.width == 0u || buffer.height == 0u || buffer.pixels.data == 0)
+    if (buffer == 0 || buffer->width == 0u || buffer->height == 0u || buffer->pixels == 0)
     {
         return false;
     }

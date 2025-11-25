@@ -19,6 +19,37 @@ namespace
         out.tile_count_y = out.chunk_size_y * out.chunk_count_y;
         return out;
     }
+
+    void world_init_networks(World &world)
+    {
+        /* Clear any previous buffers before reinitialising. */
+        trans_graph_free(&world.trans_power);
+        trans_graph_free(&world.trans_fluid);
+        trans_graph_free(&world.trans_data);
+        travel_graph_free(&world.travel_rail);
+        travel_graph_free(&world.travel_road);
+        travel_graph_free(&world.travel_water);
+        travel_graph_free(&world.travel_air);
+
+        trans_graph_init(&world.trans_power, TRANS_FAM_POWER);
+        trans_graph_init(&world.trans_fluid, TRANS_FAM_FLUID);
+        trans_graph_init(&world.trans_data, TRANS_FAM_DATA);
+        travel_graph_init(&world.travel_rail, TRAVEL_FAM_RAIL);
+        travel_graph_init(&world.travel_road, TRAVEL_FAM_ROAD);
+        travel_graph_init(&world.travel_water, TRAVEL_FAM_WATER);
+        travel_graph_init(&world.travel_air, TRAVEL_FAM_AIR);
+    }
+
+    void world_free_networks(World &world)
+    {
+        trans_graph_free(&world.trans_power);
+        trans_graph_free(&world.trans_fluid);
+        trans_graph_free(&world.trans_data);
+        travel_graph_free(&world.travel_rail);
+        travel_graph_free(&world.travel_road);
+        travel_graph_free(&world.travel_water);
+        travel_graph_free(&world.travel_air);
+    }
 }
 
 bool world_resize(World &world, const WorldDimensions &dimensions)
@@ -47,6 +78,7 @@ bool world_resize(World &world, const WorldDimensions &dimensions)
     world.chunk_count = dimensions.chunk_count_x * dimensions.chunk_count_y;
     world.tiles = new Tile[world.tile_count];
     world.chunks = new Chunk[world.chunk_count];
+    world_init_networks(world);
 
     /* Zero-initialize terrain. */
     u32 index;
@@ -100,6 +132,8 @@ void world_shutdown(World &world)
         world.chunks = 0;
         world.chunk_count = 0u;
     }
+
+    world_free_networks(world);
 
     world.dimensions.chunk_size_x = 0u;
     world.dimensions.chunk_size_y = 0u;

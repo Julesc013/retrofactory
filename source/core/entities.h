@@ -5,6 +5,8 @@
 #include "utility/array.h"
 #include "world/world.h"
 #include "mods/prototypes.h"
+#include "core/travel_net.h"
+#include "core/trans_net.h"
 
 struct EntityInstance
 {
@@ -13,6 +15,13 @@ struct EntityInstance
     u32 x;
     u32 y;
     u8 state;
+};
+
+struct StationComponent
+{
+    TravelNodeId travel_node;
+    TransNodeId power_node;
+    TransNodeId data_node;
 };
 
 struct EntitiesState
