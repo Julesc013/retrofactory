@@ -1,13 +1,17 @@
 #pragma once
 
-#include "render/rend_api.h"
+#include "system/types.h"
+#include "render/rend_backend.h"
 
-enum RenderBackend
+struct PresentHandle;
+struct RenderContext;
+struct RenderInitParams;
+
+struct RenderAdapter
 {
-    RenderBackend_Software,
-    RenderBackend_DX5
+    bool (*init)(const RenderInitParams *params, PresentHandle *presenter);
+    bool (*frame)(RenderContext *ctx, PresentHandle *presenter);
+    void (*shutdown)(PresentHandle *presenter);
 };
 
-bool rend_pick_init(RenderBackend backend);
-bool rend_pick_frame(RenderBackend backend, RenderContext &ctx);
-void rend_pick_shutdown(RenderBackend backend);
+const RenderAdapter *rend_pick_adapter(const RenderBackendId &backend);

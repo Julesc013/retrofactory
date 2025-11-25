@@ -5,21 +5,25 @@ namespace
     RenderBackbuffer g_gl2_buffer;
 }
 
-bool rend_gl2_init()
+bool rend_gl2_init(void)
 {
-    return render_backbuffer_init(g_gl2_buffer, 400u, 300u);
+    return render_backbuffer_init(&g_gl2_buffer, 400u, 300u);
 }
 
-bool rend_gl2_frame(RenderContext &ctx)
+bool rend_gl2_frame(RenderContext *ctx)
 {
-    if (ctx.target == 0)
+    if (ctx == 0)
     {
-        ctx.target = &g_gl2_buffer;
+        return false;
+    }
+    if (ctx->target == 0)
+    {
+        ctx->target = &g_gl2_buffer;
     }
     return render_frame(ctx);
 }
 
-void rend_gl2_shutdown()
+void rend_gl2_shutdown(void)
 {
-    render_backbuffer_free(g_gl2_buffer);
+    render_backbuffer_free(&g_gl2_buffer);
 }

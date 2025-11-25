@@ -33,6 +33,8 @@ add_library(world
     world/planet.cpp
     world/transit.cpp
     world/worldgen.cpp
+    core/travel_net.c
+    core/trans_net.c
 )
 
 target_include_directories(world
@@ -152,6 +154,11 @@ add_library(render
     render/rend_api.cpp
     render/rend_pick.cpp
     render/rend_sw.cpp
+    render/rend_sdl.cpp
+    render/rend_dx.cpp
+    render/rend_gl.cpp
+    render/rend_vk.cpp
+    render/rend_metal.cpp
     render/rend_dx5.cpp
     render/rend_gl1.cpp
     render/rend_gl2.cpp
@@ -170,15 +177,17 @@ target_link_libraries(render
 )
 
 add_library(present
+    present/present_api.cpp
+    present/sdl1/pres_sdl1.cpp
     present/sdl2/pres_sdl2.cpp
     present/dx5/pres_dx5.cpp
-    present/software/sw_core.cpp
-    present/software/sw_cga.cpp
-    present/software/sw_ega.cpp
-    present/software/sw_vga.cpp
-    present/software/sw_vesa.cpp
-    present/gdi/pres_gdi.cpp
-    present/qdraw/pres_qdraw.cpp
+    present/software/sw_core.c
+    present/software/sw_cga.c
+    present/software/sw_ega.c
+    present/software/sw_vga.c
+    present/software/sw_vesa.c
+    present/gdi/pres_gdi.c
+    present/qdraw/pres_qdraw.c
     present/web/pres_web.cpp
 )
 
@@ -201,6 +210,7 @@ add_library(engine
     engine/simulate.cpp
     engine/snapshot.cpp
     engine/state.cpp
+    engine/retro_runtime.cpp
 )
 
 target_include_directories(engine
@@ -222,9 +232,9 @@ add_library(launcher
     launcher/common/launcher_model.cpp
     launcher/common/launcher_config.cpp
     launcher/common/launcher_detect.cpp
-    launcher/ui/text_ui.cpp
+    launcher/ui/text_ui.c
     launcher/ui/sdl2_ui.cpp
-    launcher/ui/gdi_ui.cpp
+    launcher/ui/gdi_ui.c
     launcher/ui/macosc_ui.cpp
 )
 

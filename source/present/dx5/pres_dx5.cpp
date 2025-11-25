@@ -1,62 +1,51 @@
 #include "present/dx5/pres_dx5.h"
-#include "render/rend_pick.h"
-#include "render/rend_dx5.h"
 
 namespace
 {
-    RenderBackbuffer g_dx_buffer;
-    bool g_ready = false;
-    u64 g_last_checksum = 0u;
-    u32 g_presented = 0u;
+    bool dx_stub_create(PresentHandle *handle, const PresentInitParams *params)
+    {
+        (void)handle;
+        (void)params;
+        return false; /* not implemented yet */
+    }
+
+    void dx_stub_destroy(PresentHandle *handle)
+    {
+        (void)handle;
+    }
+
+    void dx_stub_begin(PresentHandle *handle)
+    {
+        (void)handle;
+    }
+
+    void dx_stub_end(PresentHandle *handle)
+    {
+        (void)handle;
+    }
+
+    void dx_stub_sprite(PresentHandle *handle, const SpriteDrawCmd *cmd)
+    {
+        (void)handle;
+        (void)cmd;
+    }
+
+    void dx_stub_quad(PresentHandle *handle, const QuadDrawCmd *cmd)
+    {
+        (void)handle;
+        (void)cmd;
+    }
+
+    const PresentVTable kVTable = {
+        dx_stub_create,
+        dx_stub_destroy,
+        dx_stub_begin,
+        dx_stub_end,
+        dx_stub_sprite,
+        dx_stub_quad};
 }
 
-bool pres_dx5_init()
+const PresentVTable *present_vtable_dx_stub(void)
 {
-    g_ready = rend_dx5_init();
-    if (g_ready)
-    {
-        g_ready = render_backbuffer_init(g_dx_buffer, 640u, 480u);
-    }
-    g_last_checksum = 0u;
-    g_presented = 0u;
-    return g_ready;
-}
-
-bool pres_dx5_present(RenderContext &ctx)
-{
-    if (!g_ready && !pres_dx5_init())
-    {
-        return false;
-    }
-    if (ctx.target == 0)
-    {
-        ctx.target = &g_dx_buffer;
-    }
-    if (!rend_dx5_frame(ctx))
-    {
-        return false;
-    }
-    g_last_checksum = render_backbuffer_checksum(*ctx.target);
-    g_presented += 1u;
-    return true;
-}
-
-void pres_dx5_shutdown()
-{
-    if (g_ready)
-    {
-        rend_dx5_shutdown();
-        render_backbuffer_free(g_dx_buffer);
-        g_ready = false;
-    }
-}
-
-u64 pres_dx5_last_checksum()
-{
-    return g_last_checksum;
-}
-
-u32 pres_dx5_frame_count()
-{
-    return g_presented;
+    return &kVTable;
 }

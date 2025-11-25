@@ -1,7 +1,18 @@
-#pragma once
+#ifndef PRES_QDRAW_H
+#define PRES_QDRAW_H
 
-#include "render/rend_api.h"
+#include "system/types.h"
 
-bool pres_qdraw_init();
-bool pres_qdraw_present(RenderContext &ctx);
-void pres_qdraw_shutdown();
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool pres_qdraw_init(void);
+bool pres_qdraw_present(void);
+void pres_qdraw_shutdown(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PRES_QDRAW_H */

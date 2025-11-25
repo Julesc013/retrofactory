@@ -1,5 +1,16 @@
-#pragma once
+#ifndef LAUNCHER_GDI_UI_H
+#define LAUNCHER_GDI_UI_H
 
-#include "launcher/common/launcher_config.h"
+#include "system/types.h"
 
-bool launcher_gdi_ui_run(const LauncherConfig &config);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool launcher_gdi_ui_run(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* LAUNCHER_GDI_UI_H */

@@ -1,7 +1,18 @@
-#pragma once
+#ifndef SW_CORE_H
+#define SW_CORE_H
 
-#include "render/rend_api.h"
+#include "system/types.h"
 
-bool sw_core_init();
-bool sw_core_present(RenderContext &ctx);
-void sw_core_shutdown();
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool sw_core_init(void);
+bool sw_core_present(void);
+void sw_core_shutdown(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* SW_CORE_H */

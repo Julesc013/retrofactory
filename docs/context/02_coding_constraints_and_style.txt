@@ -11,14 +11,20 @@ This document covers language/version constraints and general coding style. Beha
 
 ## Language and Compiler Targets
 
+Retro DOS/Win3x paths:
+
+- Any translation unit that can ship in a 1x/3x binary must be strict C89, live in a `.c` file, and compile as C.
+- Applies to `source/platform/{dos16,dos32,win16}`, retro presenters under `present/software`, `present/gdi`, `present/qdraw`, and launcher pieces used by 1x/3x (`launcher/entry/launcher_1x.c`, `launcher_3x.c`, `launcher/ui/text_ui.c`, `launcher/ui/gdi_ui.c`).
+- Headers reachable from these call sites must stay C-friendly (no C++-only syntax exposed).
+
 Kernel modules (`source/system`, `source/core`, `source/world`, `source/schedule`, `source/save`, `source/config`, `source/engine`, `source/mods`, `source/runtime`, `source/utility`):
 
-- Use C++98 subset.
+- Use the C++98 subset.
 - Must compile on:
   - Modern compilers (GCC/Clang/MSVC).
   - Older compilers suitable for DOS/Win16/Win32 where feasible.
 
-Platform modules and tools/tests:
+Modern-only platform modules and tools/tests:
 
 - May use a slightly more modern C++ (but avoid advanced features if not needed).
 - May use limited STL containers and utilities where they do not leak into kernel interfaces.
@@ -55,7 +61,7 @@ Platform modules and tools/tests:
 - Each header must have a unique include guard.
 - Minimise dependencies:
   - Prefer forward declarations in headers where possible.
-  - Include implementation details in `.cpp` files instead of `.h`.
+  - Include implementation details in `.c`/`.cpp` files instead of `.h`.
 - Avoid cyclic dependencies:
   - Use opaque handles/IDs and forward declarations to break cycles.
 

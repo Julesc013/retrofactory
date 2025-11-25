@@ -1,6 +1,7 @@
 #pragma once
 
 #include "system/types.h"
+#include "render/rend_backend.h"
 
 enum LauncherEdition
 {
@@ -18,7 +19,7 @@ enum LauncherEdition
 struct LauncherModel
 {
     LauncherEdition edition;
-    u32 renderer; /* maps to RenderBackend */
+    RenderBackendId renderer; /* selected render backend */
 };
 
 void launcher_model_init(LauncherModel &model, LauncherEdition edition);

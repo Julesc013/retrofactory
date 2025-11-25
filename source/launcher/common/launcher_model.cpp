@@ -3,5 +3,6 @@
 void launcher_model_init(LauncherModel &model, LauncherEdition edition)
 {
     model.edition = edition;
-    model.renderer = 0u;
+    model.renderer.family = REND_FAMILY_SDL;
+    model.renderer.version = REND_VER_SDL2;
 }

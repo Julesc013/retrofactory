@@ -7,6 +7,18 @@
 namespace
 {
     template <typename T>
+    const char *proto_key(const T &value)
+    {
+        return value.id;
+    }
+
+    template <>
+    const char *proto_key<WorldgenPrototype>(const WorldgenPrototype &value)
+    {
+        return value.biome;
+    }
+
+    template <typename T>
     bool upsert(Array<T> &arr, const char *id, const T &value, T &out_value)
     {
         if (id == 0)
@@ -16,7 +28,7 @@ namespace
         u32 i;
         for (i = 0u; i < arr.size; ++i)
         {
-            if (std::strncmp(arr.data[i].id, id, kProtoIdMax) == 0)
+            if (std::strncmp(proto_key(arr.data[i]), id, kProtoIdMax) == 0)
             {
                 out_value = value;
                 out_value.numeric_id = arr.data[i].numeric_id;

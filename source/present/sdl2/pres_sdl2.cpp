@@ -1,63 +1,53 @@
 #include "present/sdl2/pres_sdl2.h"
-#include "render/rend_pick.h"
-#include "render/rend_sw.h"
 
 namespace
 {
-    RenderBackend g_backend = RenderBackend_Software;
-    RenderBackbuffer g_buffer;
-    bool g_ready = false;
-    u32 g_presented = 0u;
-    u64 g_last_checksum = 0u;
+    bool sdl_create(PresentHandle *handle, const PresentInitParams *params)
+    {
+        if (!present_simple_create(handle, params))
+        {
+            return false;
+        }
+        handle->caps.supports_linear_filter = 1;
+        handle->caps.vsync_available = params ? params->vsync : 0;
+        return true;
+    }
+
+    void sdl_destroy(PresentHandle *handle)
+    {
+        present_simple_destroy(handle);
+    }
+
+    void sdl_begin(PresentHandle *handle)
+    {
+        present_simple_begin(handle);
+    }
+
+    void sdl_end(PresentHandle *handle)
+    {
+        present_simple_end(handle);
+    }
+
+    void sdl_draw_sprite(PresentHandle *handle, const SpriteDrawCmd *cmd)
+    {
+        present_simple_noop_sprite(handle, cmd);
+    }
+
+    void sdl_draw_quad(PresentHandle *handle, const QuadDrawCmd *cmd)
+    {
+        present_simple_noop_quad(handle, cmd);
+    }
+
+    const PresentVTable kVTable = {
+        sdl_create,
+        sdl_destroy,
+        sdl_begin,
+        sdl_end,
+        sdl_draw_sprite,
+        sdl_draw_quad};
 }
 
-bool pres_sdl2_init()
+const PresentVTable *present_vtable_sdl2(void)
 {
-    g_ready = rend_pick_init(g_backend);
-    if (g_ready)
-    {
-        g_ready = render_backbuffer_init(g_buffer, 320u, 200u);
-    }
-    g_presented = 0u;
-    g_last_checksum = 0u;
-    return g_ready;
-}
-
-bool pres_sdl2_present(RenderContext &ctx)
-{
-    if (!g_ready && !pres_sdl2_init())
-    {
-        return false;
-    }
-    if (ctx.target == 0)
-    {
-        ctx.target = &g_buffer;
-    }
-    if (!rend_pick_frame(g_backend, ctx))
-    {
-        return false;
-    }
-    g_last_checksum = render_backbuffer_checksum(*ctx.target);
-    g_presented += 1u;
-    return true;
-}
-
-void pres_sdl2_shutdown()
-{
-    if (g_ready)
-    {
-        rend_pick_shutdown(g_backend);
-        render_backbuffer_free(g_buffer);
-        g_ready = false;
-    }
-}
-
-u64 pres_sdl2_last_checksum()
-{
-    return g_last_checksum;
-}
-
-u32 pres_sdl2_frame_count()
-{
-    return g_presented;
+    return &kVTable;
 }

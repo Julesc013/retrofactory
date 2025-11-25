@@ -253,16 +253,16 @@ retrofactory
 │   │   │   └── launcher_detect.cpp
 │   │   ├── ui
 │   │   │   ├── text_ui.h
-│   │   │   ├── text_ui.cpp
+│   │   │   ├── text_ui.c
 │   │   │   ├── sdl2_ui.h
 │   │   │   ├── sdl2_ui.cpp
 │   │   │   ├── gdi_ui.h
-│   │   │   ├── gdi_ui.cpp
+│   │   │   ├── gdi_ui.c
 │   │   │   ├── macosc_ui.h
 │   │   │   └── macosc_ui.cpp
 │   │   └── entry
-│   │       ├── launcher_1x.cpp
-│   │       ├── launcher_3x.cpp
+│   │       ├── launcher_1x.c
+│   │       ├── launcher_3x.c
 │   │       ├── launcher_9x.cpp
 │   │       ├── launcher_cx.cpp
 │   │       ├── launcher_nx.cpp
@@ -285,21 +285,21 @@ retrofactory
 │   │       └── scr_bind.cpp
 │   ├── platform
 │   │   ├── dos16
-│   │   │   ├── dos16_main.cpp
-│   │   │   ├── dos16_video.cpp
-│   │   │   ├── dos16_input.cpp
-│   │   │   ├── dos16_audio.cpp
-│   │   │   ├── dos16_fs.cpp
-│   │   │   ├── dos16_time.cpp
-│   │   │   └── dos16_net.cpp
+│   │   │   ├── dos16_main.c
+│   │   │   ├── dos16_video.c
+│   │   │   ├── dos16_input.c
+│   │   │   ├── dos16_audio.c
+│   │   │   ├── dos16_fs.c
+│   │   │   ├── dos16_time.c
+│   │   │   └── dos16_net.c
 │   │   ├── dos32
-│   │   │   ├── dos32_main.cpp
-│   │   │   ├── dos32_video.cpp
-│   │   │   ├── dos32_input.cpp
-│   │   │   ├── dos32_audio.cpp
-│   │   │   ├── dos32_fs.cpp
-│   │   │   ├── dos32_time.cpp
-│   │   │   └── dos32_net.cpp
+│   │   │   ├── dos32_main.c
+│   │   │   ├── dos32_video.c
+│   │   │   ├── dos32_input.c
+│   │   │   ├── dos32_audio.c
+│   │   │   ├── dos32_fs.c
+│   │   │   ├── dos32_time.c
+│   │   │   └── dos32_net.c
 │   │   ├── posix
 │   │   │   ├── posix_main.cpp
 │   │   │   ├── posix_video.cpp
@@ -317,13 +317,13 @@ retrofactory
 │   │   │   ├── web_time.cpp
 │   │   │   └── web_net.cpp
 │   │   ├── win16
-│   │   │   ├── win16_main.cpp
-│   │   │   ├── win16_video.cpp
-│   │   │   ├── win16_input.cpp
-│   │   │   ├── win16_audio.cpp
-│   │   │   ├── win16_fs.cpp
-│   │   │   ├── win16_time.cpp
-│   │   │   └── win16_net.cpp
+│   │   │   ├── win16_main.c
+│   │   │   ├── win16_video.c
+│   │   │   ├── win16_input.c
+│   │   │   ├── win16_audio.c
+│   │   │   ├── win16_fs.c
+│   │   │   ├── win16_time.c
+│   │   │   └── win16_net.c
 │   │   └── win32
 │   │       ├── win32_main.cpp
 │   │       ├── win32_video.cpp
@@ -340,18 +340,18 @@ retrofactory
 │   │   │   ├── pres_dx5.h
 │   │   │   └── pres_dx5.cpp
 │   │   ├── software
-│   │   │   ├── sw_cga.cpp
-│   │   │   ├── sw_ega.cpp
-│   │   │   ├── sw_vga.cpp
-│   │   │   ├── sw_vesa.cpp
+│   │   │   ├── sw_cga.c
+│   │   │   ├── sw_ega.c
+│   │   │   ├── sw_vga.c
+│   │   │   ├── sw_vesa.c
 │   │   │   ├── sw_core.h
-│   │   │   └── sw_core.cpp
+│   │   │   └── sw_core.c
 │   │   ├── gdi
 │   │   │   ├── pres_gdi.h
-│   │   │   └── pres_gdi.cpp
+│   │   │   └── pres_gdi.c
 │   │   ├── qdraw
 │   │   │   ├── pres_qdraw.h
-│   │   │   └── pres_qdraw.cpp
+│   │   │   └── pres_qdraw.c
 │   │   └── web
 │   │       ├── pres_web.h
 │   │       └── pres_web.cpp

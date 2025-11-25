@@ -1,31 +1,38 @@
 #include "core/networks.h"
-#include "utility/hash.h"
+#include "core/game_state.h"
+#include "mods/prototypes.h"
+
 #include <cstring>
 
-static NetworkId next_network_id(NetworkState &state)
+namespace
 {
-    if (state.next_id == 0u)
+    NetworkId next_network_id(NetworkState &state)
     {
-        state.next_id = 1u;
+        if (state.next_id == 0u)
+        {
+            state.next_id = 1u;
+        }
+        NetworkId id = state.next_id;
+        state.next_id += 1u;
+        return id;
     }
-    NetworkId id = state.next_id;
-    state.next_id += 1u;
-    return id;
+
+    TransNodeId spawn_node(TransGraph *graph)
+    {
+        if (graph == 0)
+        {
+            TransNodeId invalid;
+            invalid.index = -1;
+            return invalid;
+        }
+        return trans_node_add(graph, 0, 0, 0);
+    }
 }
 
-static NetworkNode make_node(NetworkId id, u32 capacity)
+void networks_init(NetworkState &state, TransGraph *power_graph, TransGraph *fluid_graph, const PrototypeStore *prototypes)
 {
-    NetworkNode node;
-    node.id = id;
-    node.capacity = capacity;
-    node.load = 0u;
-    return node;
-}
-
-void networks_init(NetworkState &state, const PrototypeStore *prototypes)
-{
-    array_init(state.power);
-    array_init(state.fluid);
+    state.power_graph = power_graph;
+    state.fluid_graph = fluid_graph;
     state.next_id = 1u;
     state.prototypes = prototypes;
 
@@ -49,48 +56,44 @@ void networks_init(NetworkState &state, const PrototypeStore *prototypes)
 
 void networks_shutdown(NetworkState &state)
 {
-    array_free(state.power);
-    array_free(state.fluid);
+    state.power_graph = 0;
+    state.fluid_graph = 0;
     state.next_id = 1u;
     state.prototypes = 0;
 }
 
 NetworkId networks_create_power(NetworkState &state, u32 capacity)
 {
+    TransNodeId trans_id = spawn_node(state.power_graph);
     NetworkId id = next_network_id(state);
-    NetworkNode node = make_node(id, capacity);
-    if (!array_push(state.power, node))
-    {
-        return 0u;
-    }
+    (void)capacity;
+    (void)trans_id;
     return id;
 }
 
 NetworkId networks_create_fluid(NetworkState &state, u32 capacity)
 {
+    TransNodeId trans_id = spawn_node(state.fluid_graph);
     NetworkId id = next_network_id(state);
-    NetworkNode node = make_node(id, capacity);
-    if (!array_push(state.fluid, node))
-    {
-        return 0u;
-    }
+    (void)capacity;
+    (void)trans_id;
     return id;
 }
 
 bool networks_tick(NetworkState &state, Tick tick)
 {
-    u32 i;
-    for (i = 0u; i < state.power.size; ++i)
-    {
-        NetworkNode &node = state.power.data[i];
-        const u32 hash = hash_combine32(node.id, tick);
-        node.load = (hash % (node.capacity + 1u));
-    }
-    for (i = 0u; i < state.fluid.size; ++i)
-    {
-        NetworkNode &node = state.fluid.data[i];
-        const u32 hash = hash_combine32(node.id ^ 0xA5A5u, tick + 3u);
-        node.load = (hash % (node.capacity + 1u));
-    }
+    GameState gs;
+    (void)tick;
+    gs.world = 0;
+    gs.entities = 0;
+    gs.trans_power = state.power_graph;
+    gs.trans_fluid = state.fluid_graph;
+    gs.trans_data = 0;
+    gs.travel_rail = 0;
+    gs.travel_road = 0;
+    gs.travel_water = 0;
+    gs.travel_air = 0;
+    trans_step_power(&gs);
+    trans_step_fluid(&gs);
     return true;
 }

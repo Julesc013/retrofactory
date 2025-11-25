@@ -78,6 +78,12 @@ Status: Design reference for Codex and all tooling
   - can use some STL in non-critical paths if really necessary (prefer not),
   - can use floats for render/UI math.
 
+**Retro targets (1x/3x):**
+
+- Any translation unit that ever links into DOS or Win3x binaries must be strict C89 (`.c`, no C++ features).
+- This applies to `source/platform/dos16`, `source/platform/dos32`, `source/platform/win16`, presenters under `present/software`, `present/gdi`, `present/qdraw`, and launcher entry/UI used by 1x/3x (`launcher/entry/launcher_1x.c`, `launcher_3x.c`, `launcher/ui/text_ui.c`, `launcher/ui/gdi_ui.c`).
+- Modern-only targets (9x+/NX/LX/MX/tools/tests) can keep the C++98 subset above.
+
 **Lua:**
 
 - Script mods are Lua only (no native code).
@@ -805,12 +811,12 @@ All of these:
 - `common/launcher_config.[hc]pp` – read/write launcher config.
 - `common/launcher_detect.[hc]pp` – hardware/OS detection.
 
-- `ui/text_ui.[hc]pp` – text launcher UI (DOS).
+- `ui/text_ui.[ch]` – text launcher UI (DOS).
 - `ui/sdl2_ui.[hc]pp` – SDL2 launcher UI (NX/LX/MX).
-- `ui/gdi_ui.[hc]pp` – Win3x launcher UI.
+- `ui/gdi_ui.[ch]` – Win3x launcher UI.
 - `ui/macosc_ui.[hc]pp` – classic Mac launcher UI.
 
-- `entry/launcher_1x.cpp`, `launcher_3x.cpp`, `launcher_9x.cpp`, `launcher_cx.cpp`, `launcher_nx.cpp`, `launcher_lx.cpp`, `launcher_mx.cpp` – per-edition `main()` or entry stub.
+- `entry/launcher_1x.c`, `launcher_3x.c`, `launcher_9x.cpp`, `launcher_cx.cpp`, `launcher_nx.cpp`, `launcher_lx.cpp`, `launcher_mx.cpp` – per-edition `main()` or entry stub.
 
 Restrictions:
 
@@ -843,9 +849,9 @@ Backend presenters:
 
 - `sdl2/pres_sdl2.[hc]pp` – create SDL window, GL/renderer context; hand back buffer to `render`.
 - `dx5/pres_dx5.[hc]pp` – create DX5 surfaces.
-- `software/sw_core.[hc]pp`, `sw_cga.cpp`, `sw_ega.cpp`, `sw_vga.cpp`, `sw_vesa.cpp` – map software backbuffer to DOS/VGA hardware modes.
-- `gdi/pres_gdi.[hc]pp` – Win16/Win3x GDI presenter.
-- `qdraw/pres_qdraw.[hc]pp` – Mac classic QuickDraw presenter.
+- `software/sw_core.[ch]`, `sw_cga.c`, `sw_ega.c`, `sw_vga.c`, `sw_vesa.c` – map software backbuffer to DOS/VGA hardware modes.
+- `gdi/pres_gdi.[ch]` – Win16/Win3x GDI presenter.
+- `qdraw/pres_qdraw.[ch]` – Mac classic QuickDraw presenter.
 - `web/pres_web.[hc]pp` – WebAssembly/WebGL canvas presenter.
 
 All depend on platform-specific headers/APIs; they must **not** call sim directly; only work with `RenderContext` and platform handles.

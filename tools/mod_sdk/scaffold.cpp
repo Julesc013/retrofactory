@@ -1,5 +1,7 @@
 #include "scaffold.h"
 
+#include "system/types.h"
+
 #include <cstdio>
 #include <errno.h>
 #include <cstring>

@@ -49,12 +49,18 @@ int save_view_main(int argc, char **argv)
                         inst.y);
         }
     }
-    std::printf(" networks: P=%u F=%u\n", state.networks.power.size, state.networks.fluid.size);
-    if (state.networks.power.size > 0u)
-    {
-        const NetworkNode &n = state.networks.power.data[0];
-        std::printf("  power head load=%u/%u\n", n.load, n.capacity);
-    }
+    std::printf(" trans: power nodes=%d edges=%d | fluid nodes=%d edges=%d | data nodes=%d edges=%d\n",
+                state.world.trans_power.node_count,
+                state.world.trans_power.edge_count,
+                state.world.trans_fluid.node_count,
+                state.world.trans_fluid.edge_count,
+                state.world.trans_data.node_count,
+                state.world.trans_data.edge_count);
+    std::printf(" travel: rail N=%d S=%d | road N=%d S=%d | water N=%d S=%d | air N=%d S=%d\n",
+                state.world.travel_rail.node_count, state.world.travel_rail.segment_count,
+                state.world.travel_road.node_count, state.world.travel_road.segment_count,
+                state.world.travel_water.node_count, state.world.travel_water.segment_count,
+                state.world.travel_air.node_count, state.world.travel_air.segment_count);
     std::printf(" research topics: %u active=%u progress=%u\n",
                 state.research.topics.size,
                 state.research.active,

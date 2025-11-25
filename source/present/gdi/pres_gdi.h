@@ -1,7 +1,18 @@
-#pragma once
+#ifndef PRES_GDI_H
+#define PRES_GDI_H
 
-#include "render/rend_api.h"
+#include "system/types.h"
 
-bool pres_gdi_init();
-bool pres_gdi_present(RenderContext &ctx);
-void pres_gdi_shutdown();
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool pres_gdi_init(void);
+bool pres_gdi_present(void);
+void pres_gdi_shutdown(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PRES_GDI_H */
