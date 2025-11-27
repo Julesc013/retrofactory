@@ -262,7 +262,7 @@ bool render_init(const RenderInitParams *params)
     {
         return false;
     }
-    const RenderAdapter *adapter = rend_pick_adapter(params.backend);
+    const RenderAdapter *adapter = rend_pick_adapter(params->backend);
     if (adapter == 0 || adapter->frame == 0)
     {
         return false;

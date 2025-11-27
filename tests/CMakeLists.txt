@@ -27,6 +27,8 @@ target_link_libraries(test_save_load
         system
         world
         engine
+        render
+        present
 )
 
 add_test(NAME determinism_save_load COMMAND test_save_load)
@@ -83,35 +85,35 @@ add_executable(test_render_sw
     render/test_render_sw.cpp
 )
 target_include_directories(test_render_sw PRIVATE ${PROJECT_SOURCE_DIR}/source)
-target_link_libraries(test_render_sw PRIVATE engine render core world utility system)
+target_link_libraries(test_render_sw PRIVATE engine render present core world utility system)
 add_test(NAME render_sw COMMAND test_render_sw)
 
 add_executable(test_presenters
     render/test_presenters.cpp
 )
 target_include_directories(test_presenters PRIVATE ${PROJECT_SOURCE_DIR}/source)
-target_link_libraries(test_presenters PRIVATE engine present render core world utility system)
+target_link_libraries(test_presenters PRIVATE engine render present core world utility system)
 add_test(NAME render_presenters COMMAND test_presenters)
 
 add_executable(test_replay_basic
     determinism/test_replay_basic.cpp
 )
 target_include_directories(test_replay_basic PRIVATE ${PROJECT_SOURCE_DIR}/source)
-target_link_libraries(test_replay_basic PRIVATE engine core saveload world utility system render)
+target_link_libraries(test_replay_basic PRIVATE engine core saveload world utility system render present)
 add_test(NAME determinism_replay_basic COMMAND test_replay_basic)
 
 add_executable(test_replay_cross
     determinism/test_replay_cross.cpp
 )
 target_include_directories(test_replay_cross PRIVATE ${PROJECT_SOURCE_DIR}/source)
-target_link_libraries(test_replay_cross PRIVATE engine core saveload world utility system render)
+target_link_libraries(test_replay_cross PRIVATE engine core saveload world utility system render present)
 add_test(NAME determinism_replay_cross COMMAND test_replay_cross)
 
 add_executable(test_replay_editions
     determinism/test_replay_editions.cpp
 )
 target_include_directories(test_replay_editions PRIVATE ${PROJECT_SOURCE_DIR}/source)
-target_link_libraries(test_replay_editions PRIVATE engine core saveload world utility system render)
+target_link_libraries(test_replay_editions PRIVATE engine core saveload world utility system render present)
 add_test(NAME determinism_replay_editions COMMAND test_replay_editions)
 
 add_test(NAME tools_asset_packer COMMAND asset_packer_tool)

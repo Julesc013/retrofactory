@@ -1,0 +1,10 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Inbox/Git Repos/retrofactory/build-ucrt/cmake_install.cmake",
+		"C:/Inbox/Git Repos/retrofactory/build-ucrt/source/cmake_install.cmake",
+		"C:/Inbox/Git Repos/retrofactory/build-ucrt/tools/cmake_install.cmake",
+		"C:/Inbox/Git Repos/retrofactory/build-ucrt/tests/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

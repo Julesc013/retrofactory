@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <cstdio>
 #include <cstring>
+#include <cstdlib>
 
 #include "saveload/hash.h"
 #include "config/version.h"
@@ -52,6 +53,118 @@ namespace
         gs.travel_air = &state.world.travel_air;
         return gs;
     }
+
+    bool write_trans_graph(const TransGraph &graph, std::FILE *file)
+    {
+        const u32 node_count = static_cast<u32>(graph.node_count);
+        const u32 edge_count = static_cast<u32>(graph.edge_count);
+        bool ok = write_all(&node_count, sizeof(u32), file);
+        ok = ok && write_all(&edge_count, sizeof(u32), file);
+        if (ok && node_count > 0u)
+        {
+            const size_t bytes = static_cast<size_t>(node_count) * sizeof(TransNode);
+            ok = write_all(graph.nodes, bytes, file);
+        }
+        if (ok && edge_count > 0u)
+        {
+            const size_t bytes = static_cast<size_t>(edge_count) * sizeof(TransEdge);
+            ok = write_all(graph.edges, bytes, file);
+        }
+        return ok;
+    }
+
+    bool write_travel_graph(const TravelGraph &graph, std::FILE *file)
+    {
+        const u32 node_count = static_cast<u32>(graph.node_count);
+        const u32 segment_count = static_cast<u32>(graph.segment_count);
+        bool ok = write_all(&node_count, sizeof(u32), file);
+        ok = ok && write_all(&segment_count, sizeof(u32), file);
+        if (ok && node_count > 0u)
+        {
+            const size_t bytes = static_cast<size_t>(node_count) * sizeof(TravelNode);
+            ok = write_all(graph.nodes, bytes, file);
+        }
+        if (ok && segment_count > 0u)
+        {
+            const size_t bytes = static_cast<size_t>(segment_count) * sizeof(TravelSegment);
+            ok = write_all(graph.segments, bytes, file);
+        }
+        return ok;
+    }
+
+    bool read_trans_graph(TransGraph &graph, std::FILE *file)
+    {
+        u32 node_count = 0u;
+        u32 edge_count = 0u;
+        bool ok = read_all(&node_count, sizeof(u32), file);
+        ok = ok && read_all(&edge_count, sizeof(u32), file);
+        TransNode *nodes = 0;
+        TransEdge *edges = 0;
+        if (ok && node_count > 0u)
+        {
+            const size_t bytes = static_cast<size_t>(node_count) * sizeof(TransNode);
+            nodes = static_cast<TransNode *>(std::malloc(bytes));
+            ok = nodes != 0 && read_all(nodes, bytes, file);
+        }
+        if (ok && edge_count > 0u)
+        {
+            const size_t bytes = static_cast<size_t>(edge_count) * sizeof(TransEdge);
+            edges = static_cast<TransEdge *>(std::malloc(bytes));
+            ok = edges != 0 && read_all(edges, bytes, file);
+        }
+        if (!ok)
+        {
+            std::free(nodes);
+            std::free(edges);
+            return false;
+        }
+
+        trans_graph_free(&graph);
+        graph.nodes = nodes;
+        graph.node_count = static_cast<int>(node_count);
+        graph.node_capacity = static_cast<int>(node_count);
+        graph.edges = edges;
+        graph.edge_count = static_cast<int>(edge_count);
+        graph.edge_capacity = static_cast<int>(edge_count);
+        return true;
+    }
+
+    bool read_travel_graph(TravelGraph &graph, std::FILE *file)
+    {
+        u32 node_count = 0u;
+        u32 segment_count = 0u;
+        bool ok = read_all(&node_count, sizeof(u32), file);
+        ok = ok && read_all(&segment_count, sizeof(u32), file);
+        TravelNode *nodes = 0;
+        TravelSegment *segments = 0;
+        if (ok && node_count > 0u)
+        {
+            const size_t bytes = static_cast<size_t>(node_count) * sizeof(TravelNode);
+            nodes = static_cast<TravelNode *>(std::malloc(bytes));
+            ok = nodes != 0 && read_all(nodes, bytes, file);
+        }
+        if (ok && segment_count > 0u)
+        {
+            const size_t bytes = static_cast<size_t>(segment_count) * sizeof(TravelSegment);
+            segments = static_cast<TravelSegment *>(std::malloc(bytes));
+            ok = segments != 0 && read_all(segments, bytes, file);
+        }
+        if (!ok)
+        {
+            std::free(nodes);
+            std::free(segments);
+            return false;
+        }
+
+        travel_graph_free(&graph);
+        graph.nodes = nodes;
+        graph.node_count = static_cast<int>(node_count);
+        graph.node_capacity = static_cast<int>(node_count);
+        graph.segments = segments;
+        graph.segment_count = static_cast<int>(segment_count);
+        graph.segment_capacity = static_cast<int>(segment_count);
+        return true;
+    }
 }
 
 bool save_core_state(const CoreState &state, const char *path)
@@ -87,8 +200,8 @@ bool save_core_state(const CoreState &state, const char *path)
         SaveWriter writer;
         writer.file = file;
         GameState gs = make_game_state(const_cast<CoreState &>(state));
-        saveload_write_travel_networks(&writer, &gs);
-        saveload_write_trans_networks(&writer, &gs);
+        ok = ok && saveload_write_travel_networks(&writer, &gs);
+        ok = ok && saveload_write_trans_networks(&writer, &gs);
     }
 
     /* Core subsystems */
@@ -179,8 +292,8 @@ bool load_core_state(CoreState &state, const char *path)
         SaveReader reader;
         reader.file = file;
         GameState gs = make_game_state(state);
-        saveload_read_travel_networks(&reader, &gs);
-        saveload_read_trans_networks(&reader, &gs);
+        ok = ok && saveload_read_travel_networks(&reader, &gs);
+        ok = ok && saveload_read_trans_networks(&reader, &gs);
     }
 
     if (ok)
@@ -254,30 +367,56 @@ bool load_core_state(CoreState &state, const char *path)
     return ok;
 }
 
-void saveload_write_travel_networks(SaveWriter* w, const GameState* g)
+bool saveload_write_travel_networks(SaveWriter *w, const GameState *g)
 {
-    (void)w;
-    (void)g;
-    /* TODO: serialize travel graphs (rail/road/water/air). */
+    if (w == 0 || g == 0 || w->file == 0)
+    {
+        return false;
+    }
+    bool ok = true;
+    ok = ok && write_travel_graph(*g->travel_rail, w->file);
+    ok = ok && write_travel_graph(*g->travel_road, w->file);
+    ok = ok && write_travel_graph(*g->travel_water, w->file);
+    ok = ok && write_travel_graph(*g->travel_air, w->file);
+    return ok;
 }
 
-void saveload_read_travel_networks(SaveReader* r, GameState* g)
+bool saveload_read_travel_networks(SaveReader *r, GameState *g)
 {
-    (void)r;
-    (void)g;
-    /* TODO: deserialize travel graphs when format is defined. */
+    if (r == 0 || g == 0 || r->file == 0)
+    {
+        return false;
+    }
+    bool ok = true;
+    ok = ok && read_travel_graph(*g->travel_rail, r->file);
+    ok = ok && read_travel_graph(*g->travel_road, r->file);
+    ok = ok && read_travel_graph(*g->travel_water, r->file);
+    ok = ok && read_travel_graph(*g->travel_air, r->file);
+    return ok;
 }
 
-void saveload_write_trans_networks(SaveWriter* w, const GameState* g)
+bool saveload_write_trans_networks(SaveWriter *w, const GameState *g)
 {
-    (void)w;
-    (void)g;
-    /* TODO: serialize transmission graphs (power/fluid/data). */
+    if (w == 0 || g == 0 || w->file == 0)
+    {
+        return false;
+    }
+    bool ok = true;
+    ok = ok && write_trans_graph(*g->trans_power, w->file);
+    ok = ok && write_trans_graph(*g->trans_fluid, w->file);
+    ok = ok && write_trans_graph(*g->trans_data, w->file);
+    return ok;
 }
 
-void saveload_read_trans_networks(SaveReader* r, GameState* g)
+bool saveload_read_trans_networks(SaveReader *r, GameState *g)
 {
-    (void)r;
-    (void)g;
-    /* TODO: deserialize transmission graphs when format is defined. */
+    if (r == 0 || g == 0 || r->file == 0)
+    {
+        return false;
+    }
+    bool ok = true;
+    ok = ok && read_trans_graph(*g->trans_power, r->file);
+    ok = ok && read_trans_graph(*g->trans_fluid, r->file);
+    ok = ok && read_trans_graph(*g->trans_data, r->file);
+    return ok;
 }
